@@ -6,6 +6,7 @@ import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.client.builder.AwsClientBuilder;
+import com.amazonaws.http.NoneTlsKeyManagersProvider;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.Headers;
@@ -1046,6 +1047,7 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     		AmazonS3ClientBuilder s3CB = AmazonS3ClientBuilder.standard();
 
     		ClientConfiguration cc = new ClientConfiguration();
+    		cc.setTlsKeyManagersProvider(NoneTlsKeyManagersProvider.getInstance());
     		Integer poolSize = Integer.getInteger("dataverse.files." + driverId + ".connection-pool-size", 256);
     		cc.setMaxConnections(poolSize);
     		s3CB.setClientConfiguration(cc);

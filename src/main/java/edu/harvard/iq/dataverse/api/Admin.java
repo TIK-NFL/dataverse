@@ -1,5 +1,8 @@
 package edu.harvard.iq.dataverse.api;
 
+import edu.harvard.iq.dataverse.BannerMessage;
+import edu.harvard.iq.dataverse.BannerMessageServiceBean;
+import edu.harvard.iq.dataverse.BannerMessageText;
 import edu.harvard.iq.dataverse.DataFile;
 import edu.harvard.iq.dataverse.DataFileServiceBean;
 import edu.harvard.iq.dataverse.Dataset;
@@ -72,10 +75,12 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
 import edu.harvard.iq.dataverse.authorization.AuthTestDataServiceBean;
+import edu.harvard.iq.dataverse.authorization.AuthenticationProvidersRegistrationServiceBean;
 import edu.harvard.iq.dataverse.authorization.RoleAssignee;
 import edu.harvard.iq.dataverse.authorization.UserRecordIdentifier;
 import edu.harvard.iq.dataverse.authorization.groups.impl.explicit.ExplicitGroupServiceBean;
 import edu.harvard.iq.dataverse.authorization.users.User;
+import edu.harvard.iq.dataverse.dataaccess.ImageThumbConverter;
 import edu.harvard.iq.dataverse.dataset.DatasetThumbnail;
 import edu.harvard.iq.dataverse.dataset.DatasetUtil;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
@@ -96,7 +101,9 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.function.Consumer;
 import javax.inject.Inject;
+import javax.json.JsonArray;
 import javax.persistence.Query;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
@@ -113,6 +120,8 @@ public class Admin extends AbstractApiBean {
 
 	private static final Logger logger = Logger.getLogger(Admin.class.getName());
 
+        @EJB
+        AuthenticationProvidersRegistrationServiceBean authProvidersRegistrationSvc;
 	@EJB
 	BuiltinUserServiceBean builtinUserService;
 	@EJB
@@ -141,6 +150,8 @@ public class Admin extends AbstractApiBean {
         DatasetVersionServiceBean datasetVersionService;
         @EJB
         ExplicitGroupServiceBean explicitGroupService;
+        @EJB
+        BannerMessageServiceBean bannerMessageService;
         
 
 	// Make the session available
@@ -222,9 +233,9 @@ public class Admin extends AbstractApiBean {
 				managed = row;
 			}
 			if (managed.isEnabled()) {
-				AuthenticationProvider provider = authSvc.loadProvider(managed);
-				authSvc.deregisterProvider(provider.getId());
-				authSvc.registerProvider(provider);
+				AuthenticationProvider provider = authProvidersRegistrationSvc.loadProvider(managed);
+				authProvidersRegistrationSvc.deregisterProvider(provider.getId());
+				authProvidersRegistrationSvc.registerProvider(provider);
 			}
 			return created("/api/admin/authenticationProviders/" + managed.getId(), json(managed));
 		} catch (AuthorizationSetupException e) {
@@ -270,7 +281,7 @@ public class Admin extends AbstractApiBean {
 				return ok(String.format("Authentication provider '%s' already enabled", id));
 			}
 			try {
-				authSvc.registerProvider(authSvc.loadProvider(row));
+				authProvidersRegistrationSvc.registerProvider(authProvidersRegistrationSvc.loadProvider(row));
 				return ok(String.format("Authentication Provider %s enabled", row.getId()));
 
 			} catch (AuthenticationProviderFactoryNotFoundException ex) {
@@ -284,7 +295,7 @@ public class Admin extends AbstractApiBean {
 
 		} else {
 			// disable a provider
-			authSvc.deregisterProvider(id);
+			authProvidersRegistrationSvc.deregisterProvider(id);
 			return ok("Authentication Provider '" + id + "' disabled. "
 					+ (authSvc.getAuthenticationProviderIds().isEmpty()
 							? "WARNING: no enabled authentication providers left."
@@ -308,7 +319,7 @@ public class Admin extends AbstractApiBean {
 	@DELETE
 	@Path("authenticationProviders/{id}/")
 	public Response deleteAuthenticationProvider(@PathParam("id") String id) {
-		authSvc.deregisterProvider(id);
+		authProvidersRegistrationSvc.deregisterProvider(id);
 		AuthenticationProviderRow row = em.find(AuthenticationProviderRow.class, id);
 		if (row != null) {
 			em.remove(row);
@@ -320,15 +331,15 @@ public class Admin extends AbstractApiBean {
 						: ""));
 	}
 
-	@GET
-	@Path("authenticatedUsers/{identifier}/")
-	public Response getAuthenticatedUser(@PathParam("identifier") String identifier) {
-		AuthenticatedUser authenticatedUser = authSvc.getAuthenticatedUser(identifier);
-		if (authenticatedUser != null) {
-			return ok(json(authenticatedUser));
-		}
-		return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
-	}
+    @GET
+    @Path("authenticatedUsers/{identifier}/")
+    public Response getAuthenticatedUserByIdentifier(@PathParam("identifier") String identifier) {
+        AuthenticatedUser authenticatedUser = authSvc.getAuthenticatedUser(identifier);
+        if (authenticatedUser != null) {
+            return ok(json(authenticatedUser));
+        }
+        return error(Response.Status.BAD_REQUEST, "User " + identifier + " not found.");
+    }
 
     @DELETE
     @Path("authenticatedUsers/{identifier}/")
@@ -412,8 +423,12 @@ public class Admin extends AbstractApiBean {
 	@GET
 	@Path(listUsersPartialAPIPath)
 	@Produces({ "application/json" })
-	public Response filterAuthenticatedUsers(@QueryParam("searchTerm") String searchTerm,
-			@QueryParam("selectedPage") Integer selectedPage, @QueryParam("itemsPerPage") Integer itemsPerPage) {
+	public Response filterAuthenticatedUsers(
+			@QueryParam("searchTerm") String searchTerm,
+			@QueryParam("selectedPage") Integer selectedPage,
+			@QueryParam("itemsPerPage") Integer itemsPerPage,
+			@QueryParam("sortKey") String sortKey
+	) {
 
 		User authUser;
 		try {
@@ -430,7 +445,7 @@ public class Admin extends AbstractApiBean {
 
 		UserListMaker userListMaker = new UserListMaker(userService);
 
-		String sortKey = null;
+		// String sortKey = null;
 		UserListResult userListResult = userListMaker.runUserSearch(searchTerm, itemsPerPage, selectedPage, sortKey);
 
 		return ok(userListResult.toJSON());
@@ -1032,6 +1047,77 @@ public class Admin extends AbstractApiBean {
         }
         return ok(msg);
     }
+    
+    // This API does the same thing as /validateDataFileHashValue/{fileId}, 
+    // but for all the files in the dataset, with streaming output.
+    @GET
+    @Path("validate/dataset/files/{id}")
+    @Produces({"application/json"})
+    public Response validateDatasetDatafiles(@PathParam("id") String id) {
+        
+        // Streaming output: the API will start producing 
+        // the output right away, as it goes through the list 
+        // of the datafiles in the dataset.
+        // The streaming mechanism is modeled after validate/datasets API.
+        StreamingOutput stream = new StreamingOutput() {
+
+            @Override
+            public void write(OutputStream os) throws IOException,
+                    WebApplicationException {
+                Dataset dataset;
+        
+                try {
+                    dataset = findDatasetOrDie(id);
+                } catch (Exception ex) {
+                    throw new IOException(ex.getMessage());
+                }
+                
+                os.write("{\"dataFiles\": [\n".getBytes());
+                
+                boolean wroteObject = false;
+                for (DataFile dataFile : dataset.getFiles()) {
+                    // Potentially, there's a godzillion datasets in this Dataverse. 
+                    // This is why we go through the list of ids here, and instantiate 
+                    // only one dataset at a time. 
+                    boolean success = false;
+                    boolean constraintViolationDetected = false;
+                     
+                    JsonObjectBuilder output = Json.createObjectBuilder();
+                    output.add("datafileId", dataFile.getId());
+                    output.add("storageIdentifier", dataFile.getStorageIdentifier());
+
+                    
+                    try {
+                        FileUtil.validateDataFileChecksum(dataFile);
+                        success = true;
+                    } catch (IOException ex) {
+                        output.add("status", "invalid");
+                        output.add("errorMessage", ex.getMessage());
+                    }
+                    
+                    if (success) {
+                        output.add("status", "valid");
+                    } 
+                    
+                    // write it out:
+                    
+                    if (wroteObject) {
+                        os.write(",\n".getBytes());
+                    }
+
+                    os.write(output.build().toString().getBytes("UTF8"));
+                    
+                    if (!wroteObject) {
+                        wroteObject = true;
+                    }
+                }
+                
+                os.write("\n]\n}\n".getBytes());
+            }
+            
+        };
+        return Response.ok(stream).build();
+    }
 
 	@Path("assignments/assignees/{raIdtf: .*}")
 	@GET
@@ -1206,9 +1292,9 @@ public class Admin extends AbstractApiBean {
 			return error(Response.Status.NOT_FOUND, "Could not find dataset based on id supplied: " + idSupplied + ".");
 		}
 		JsonObjectBuilder data = Json.createObjectBuilder();
-		DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail();
+		DatasetThumbnail datasetThumbnail = dataset.getDatasetThumbnail(ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE);
 		data.add("isUseGenericThumbnail", dataset.isUseGenericThumbnail());
-		data.add("datasetLogoPresent", DatasetUtil.isDatasetLogoPresent(dataset));
+		data.add("datasetLogoPresent", DatasetUtil.isDatasetLogoPresent(dataset, ImageThumbConverter.DEFAULT_CARDIMAGE_SIZE));
 		if (datasetThumbnail != null) {
 			data.add("datasetThumbnailBase64image", datasetThumbnail.getBase64image());
 			DataFile dataFile = datasetThumbnail.getDataFile();
@@ -1596,6 +1682,10 @@ public class Admin extends AbstractApiBean {
 
         try {
             AuthenticatedUser au = findAuthenticatedUserOrDie();
+			// Note - the user is being set in the session so it becomes part of the
+			// DataverseRequest and is sent to the back-end command where it is used to get
+			// the API Token which is then used to retrieve files (e.g. via S3 direct
+			// downloads) to create the Bag
             session.setUser(au);
             Dataset ds = findDatasetOrDie(dsid);
 
@@ -1756,4 +1846,78 @@ public class Admin extends AbstractApiBean {
     	DataAccess.getStorageDriverLabels().entrySet().forEach(s -> bld.add(s.getKey(), s.getValue()));
 		return ok(bld);
     }
+    
+    @POST
+    @Path("/bannerMessage")
+    public Response addBannerMessage(JsonObject jsonObject) throws WrappedResponse {
+
+        BannerMessage toAdd = new BannerMessage();
+        try {
+            String dismissible = jsonObject.getString("dismissibleByUser");
+
+            boolean dismissibleByUser = false;
+            if (dismissible.equals("true")) {
+                dismissibleByUser = true;
+            }
+            toAdd.setDismissibleByUser(dismissibleByUser);
+            toAdd.setBannerMessageTexts(new ArrayList());
+            toAdd.setActive(true);
+            JsonArray jsonArray = jsonObject.getJsonArray("messageTexts");
+            for (int i = 0; i < jsonArray.size(); i++) {
+                JsonObject obj = (JsonObject) jsonArray.get(i);
+                String message = obj.getString("message");
+                String lang = obj.getString("lang");
+                BannerMessageText messageText = new BannerMessageText();
+                messageText.setMessage(message);
+                messageText.setLang(lang);
+                messageText.setBannerMessage(toAdd);
+                toAdd.getBannerMessageTexts().add(messageText);
+            }
+                bannerMessageService.save(toAdd);
+                return ok("Banner Message added successfully.");
+
+        } catch (Exception e) {
+            logger.warning("Unexpected Exception: " + e.getMessage());
+            return error(Status.BAD_REQUEST, "Add Banner Message unexpected exception: " + e.getMessage());
+        }
+
+    }
+    
+    @DELETE
+    @Path("/bannerMessage/{id}")
+    public Response deleteBannerMessage(@PathParam("id") Long id) throws WrappedResponse {
+ 
+        BannerMessage message = em.find(BannerMessage.class, id);
+        if (message == null){
+            return error(Response.Status.NOT_FOUND, "Message id = "  + id + " not found.");
+        }
+        bannerMessageService.deleteBannerMessage(id);
+        
+        return ok("Message id =  " + id + " deleted.");
+
+    }
+    
+    @PUT
+    @Path("/bannerMessage/{id}/deactivate")
+    public Response deactivateBannerMessage(@PathParam("id") Long id) throws WrappedResponse {
+        BannerMessage message = em.find(BannerMessage.class, id);
+        if (message == null){
+            return error(Response.Status.NOT_FOUND, "Message id = "  + id + " not found.");
+        }
+        bannerMessageService.deactivateBannerMessage(id);
+        
+        return ok("Message id =  " + id + " deactivated.");
+
+    }
+    
+    @GET
+    @Path("/bannerMessage")
+    public Response getBannerMessages(@PathParam("id") Long id) throws WrappedResponse {
+
+        return ok(bannerMessageService.findAllBannerMessages().stream()
+                .map(m -> jsonObjectBuilder().add("id", m.getId()).add("displayValue", m.getDisplayValue()))
+                .collect(toJsonArray()));
+
+    }
+    
 }

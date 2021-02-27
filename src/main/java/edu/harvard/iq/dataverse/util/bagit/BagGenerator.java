@@ -56,6 +56,7 @@ import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
+import org.apache.http.conn.socket.PlainConnectionSocketFactory;
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
@@ -158,6 +159,7 @@ public class BagGenerator {
             SSLConnectionSocketFactory sslConnectionFactory = new SSLConnectionSocketFactory(builder.build(), NoopHostnameVerifier.INSTANCE);
 
             Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
+            		.register("http", PlainConnectionSocketFactory.getSocketFactory())
                     .register("https", sslConnectionFactory).build();
             cm = new PoolingHttpClientConnectionManager(registry);
 
@@ -567,8 +569,8 @@ public class BagGenerator {
                             }
 
                         } catch (IOException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
+                            logger.severe("Failed to read " + childPath);
+                            throw e;
                         } finally {
                             IOUtils.closeQuietly(inputStream);
                         }
@@ -754,8 +756,10 @@ public class BagGenerator {
                         info.append(CRLF);
 
                     } else {
-                        info.append(((JsonObject) person).get(contactNameTerm.getLabel()).getAsString());
-                        info.append(CRLF);
+                        if(contactNameTerm != null) {
+                          info.append(((JsonObject) person).get(contactNameTerm.getLabel()).getAsString());
+                          info.append(CRLF);
+                        }
                         if ((contactEmailTerm!=null) &&((JsonObject) person).has(contactEmailTerm.getLabel())) {
                             info.append("Contact-Email: ");
                             info.append(((JsonObject) person).get(contactEmailTerm.getLabel()).getAsString());
@@ -772,9 +776,10 @@ public class BagGenerator {
 
                 } else {
                     JsonObject person = contacts.getAsJsonObject();
-
-                    info.append(person.get(contactNameTerm.getLabel()).getAsString());
-                    info.append(CRLF);
+                    if(contactNameTerm != null) {
+                      info.append(person.get(contactNameTerm.getLabel()).getAsString());
+                      info.append(CRLF);
+                    }
                     if ((contactEmailTerm!=null) && (person.has(contactEmailTerm.getLabel()))) {
                         info.append("Contact-Email: ");
                         info.append(person.get(contactEmailTerm.getLabel()).getAsString());

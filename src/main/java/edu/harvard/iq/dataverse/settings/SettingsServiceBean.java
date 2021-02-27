@@ -218,10 +218,6 @@ public class SettingsServiceBean {
         */
         ThumbnailSizeLimitImage,
         ThumbnailSizeLimitPDF,
-        /* status message that will appear on the home page */
-        StatusMessageHeader,
-        /* full text of status message, to appear in popup */
-        StatusMessageText,
         /* return email address for system emails such as notifications */
         SystemEmail, 
         /* size limit for Tabular data file ingests */
@@ -422,7 +418,25 @@ public class SettingsServiceBean {
         /**
          * Shibboleth affiliation attribute which holds information about the affiliation of the user (e.g. ou)
          */
-        ShibAffiliationAttribute
+        ShibAffiliationAttribute,
+        /**
+         * Convert shibboleth AJP attributes from ISO-8859-1 to UTF-8
+         */
+        ShibAttributeCharacterSetConversionEnabled,
+        /**
+         * Validate physical files for all the datafiles in the dataset when publishing
+         */
+        FileValidationOnPublishEnabled,
+        /**
+         * If defined, this is the URL of the zipping service outside 
+         * the main Application Service where zip downloads should be directed
+         * instead of /api/access/datafiles/
+         */
+        CustomZipDownloadServiceUrl,
+        /**
+         * Sort Date Facets Chronologically instead or presenting them in order of # of hits as other facets are. Default is true
+         */
+        ChronologicalDateFacets
         ;
 
         @Override

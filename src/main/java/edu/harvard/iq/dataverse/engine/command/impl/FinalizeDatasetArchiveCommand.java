@@ -23,7 +23,6 @@ import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.pidproviders.PidProvider;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.util.BundleUtil;
-import edu.harvard.iq.dataverse.workflow.WorkflowContext.TriggerType;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Date;
@@ -91,27 +90,6 @@ public class FinalizeDatasetArchiveCommand extends AbstractPublishDatasetCommand
         
         validateOrDie(theDataset.getLatestVersion(), false);
         
-		/*
-		 * Try to register the dataset identifier. For PID providers that have registerWhenPublished == false (all except the FAKE provider at present)
-		 * the registerExternalIdentifier command will make one try to create the identifier if needed (e.g. if reserving at dataset creation wasn't done/failed).
-		 * For registerWhenPublished == true providers, if a PID conflict is found, the call will retry with new PIDs. 
-		 */
-        if ( theDataset.getGlobalIdCreateTime() == null ) {
-            try {
-                // This can potentially throw a CommandException, so let's make 
-                // sure we exit cleanly:
-
-            	registerExternalIdentifier(theDataset, ctxt, false);
-            } catch (CommandException comEx) {
-                logger.warning("Failed to reserve the identifier "+theDataset.getGlobalId().asString()+"; notifying the user(s), unlocking the dataset");
-                // Send failure notification to the user: 
-                notifyUsersDatasetPublishStatus(ctxt, theDataset, UserNotification.Type.PUBLISHFAILED_PIDREG);
-                // Remove the dataset lock: 
-                ctxt.datasets().removeDatasetLocks(theDataset, DatasetLock.Reason.finalizePublication);
-                // re-throw the exception:
-                throw comEx;
-            }
-        }
                 
         // is this the first publication of the dataset?
         if (theDataset.getPublicationDate() == null) {

@@ -14,6 +14,7 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.DestroyDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetArchiveCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetDatasetStorageSizeCommand;
 import edu.harvard.iq.dataverse.export.ExportService;
@@ -934,6 +935,32 @@ public class DatasetServiceBean implements java.io.Serializable {
         Dataset theDataset = find(datasetId);
         try {
             commandEngine.submit(new FinalizeDatasetPublicationCommand(theDataset, request, isPidPrePublished));
+        } catch (CommandException cex) {
+            logger.warning("CommandException caught when executing the asynchronous portion of the Dataset Publication Command.");
+        }
+    }
+    
+    @Asynchronous
+    @TransactionAttribute(TransactionAttributeType.SUPPORTS)
+    public void callFinalizeArchiveCommandAsynchronously(Long datasetId, CommandContext ctxt, DataverseRequest request, boolean isPidPrePublished) {
+
+        // Since we are calling the next command asynchronously anyway - sleep here
+        // for a few seconds, just in case, to make sure the database update of
+        // the dataset initiated by the PublishDatasetCommand has finished,
+        // to avoid any concurrency/optimistic lock issues.
+        // Aug. 2020/v5.0: It MAY be working consistently without any
+        // sleep here, after the call the method has been moved to the onSuccess()
+        // portion of the PublishDatasetCommand. I'm going to leave the 1 second
+        // sleep below, for just in case reasons: -- L.A.
+        try {
+            Thread.sleep(1000);
+        } catch (Exception ex) {
+            logger.warning("Failed to sleep for a second.");
+        }
+        logger.fine("Running FinalizeDatasetPublicationCommand, asynchronously");
+        Dataset theDataset = find(datasetId);
+        try {
+            commandEngine.submit(new FinalizeDatasetArchiveCommand(theDataset, request, isPidPrePublished));
         } catch (CommandException cex) {
             logger.warning("CommandException caught when executing the asynchronous portion of the Dataset Publication Command.");
         }

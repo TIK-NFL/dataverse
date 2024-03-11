@@ -1297,6 +1297,106 @@ public class Datasets extends AbstractApiBean {
 
     @POST
     @AuthRequired
+    @Path("{id}/actions/:archive")
+    public Response archiveDataset(@Context ContainerRequestContext crc, @PathParam("id") String id, @QueryParam("type") String type, @QueryParam("assureIsIndexed") boolean mustBeIndexed) {
+        try {
+            if (type == null) {
+                return error(Response.Status.BAD_REQUEST, "Missing 'type' parameter (either 'major','minor', or 'updatecurrent').");
+            }
+            boolean updateCurrent=false;
+            AuthenticatedUser user = getRequestAuthenticatedUserOrDie(crc);
+            type = type.toLowerCase();
+            boolean isMinor=false;
+            switch (type) {
+                case "minor":
+                    isMinor = true;
+                    break;
+                case "major":
+                    isMinor = false;
+                    break;
+                case "updatecurrent":
+                    if (user.isSuperuser()) {
+                        updateCurrent = true;
+                    } else {
+                        return error(Response.Status.FORBIDDEN, "Only superusers can update the current version");
+                    }
+                    break;
+                default:
+                    return error(Response.Status.BAD_REQUEST, "Illegal 'type' parameter value '" + type + "'. It needs to be either 'major', 'minor', or 'updatecurrent'.");
+            }
+
+            Dataset ds = findDatasetOrDie(id);
+            
+            boolean hasValidTerms = TermsOfUseAndAccessValidator.isTOUAValid(ds.getLatestVersion().getTermsOfUseAndAccess(), null);
+            if (!hasValidTerms) {
+                return error(Status.CONFLICT, BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
+            }
+            
+            if (mustBeIndexed) {
+                logger.fine("IT: " + ds.getIndexTime());
+                logger.fine("MT: " + ds.getModificationTime());
+                logger.fine("PIT: " + ds.getPermissionIndexTime());
+                logger.fine("PMT: " + ds.getPermissionModificationTime());
+                if (ds.getIndexTime() != null && ds.getModificationTime() != null) {
+                    logger.fine("ITMT: " + (ds.getIndexTime().compareTo(ds.getModificationTime()) <= 0));
+                }
+                /*
+                 * Some calls, such as the /datasets/actions/:import* commands do not set the
+                 * modification or permission modification times. The checks here are trying to
+                 * see if indexing or permissionindexing could be pending, so they check to see
+                 * if the relevant modification time is set and if so, whether the index is also
+                 * set and if so, if it after the modification time. If the modification time is
+                 * set and the index time is null or is before the mod time, the 409/conflict
+                 * error is returned.
+                 *
+                 */
+                if ((ds.getModificationTime()!=null && (ds.getIndexTime() == null || (ds.getIndexTime().compareTo(ds.getModificationTime()) <= 0))) ||
+                        (ds.getPermissionModificationTime()!=null && (ds.getPermissionIndexTime() == null || (ds.getPermissionIndexTime().compareTo(ds.getPermissionModificationTime()) <= 0)))) {
+                    return error(Response.Status.CONFLICT, "Dataset is awaiting indexing");
+                }
+            }
+            if (updateCurrent) {
+                /*
+                 * Note: The code here mirrors that in the
+                 * edu.harvard.iq.dataverse.DatasetPage:updateCurrentVersion method. Any changes
+                 * to the core logic (i.e. beyond updating the messaging about results) should
+                 * be applied to the code there as well.
+                 */
+                String errorMsg = null;
+                String successMsg = null;
+                try {
+                    CurateArchivedDatasetVersionCommand cmd = new CurateArchivedDatasetVersionCommand(ds, createDataverseRequest(user));
+                    ds = commandEngine.submit(cmd);
+                    successMsg = BundleUtil.getStringFromBundle("datasetversion.update.success");
+
+                    // If configured, update archive copy as well
+                } catch (CommandException ex) {
+                    errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.failure") + " - " + ex.toString();
+                    logger.severe(ex.getMessage());
+                }
+                if (errorMsg != null) {
+                    return error(Response.Status.INTERNAL_SERVER_ERROR, errorMsg);
+                } else {
+                    return Response.ok(Json.createObjectBuilder()
+                            .add("status", ApiConstants.STATUS_OK)
+                            .add("status_details", successMsg)
+                            .add("data", json(ds)).build())
+                            .type(MediaType.APPLICATION_JSON)
+                            .build();
+                }
+            } else {
+                ArchiveDatasetResult res = execCommand(new ArchiveDatasetCommand(ds,
+                        createDataverseRequest(user),
+                        isMinor));
+                return res.isWorkflow() ? accepted(json(res.getDataset())) : ok(json(res.getDataset()));
+            }
+        } catch (WrappedResponse ex) {
+            return ex.getResponse();
+        }
+    }
+    
+    @POST
+    @AuthRequired
     @Path("{id}/actions/:releasemigrated")
     @Consumes("application/ld+json, application/json-ld")
     public Response publishMigratedDataset(@Context ContainerRequestContext crc, String jsonldBody, @PathParam("id") String id, @DefaultValue("false") @QueryParam ("updatepidatprovider") boolean contactPIDProvider) {

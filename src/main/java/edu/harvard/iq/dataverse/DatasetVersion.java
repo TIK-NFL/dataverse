@@ -107,7 +107,7 @@ public class DatasetVersion implements Serializable {
     //IMPORTANT: If you add a new value to this enum, you will also have to modify the
     // StudyVersionsFragment.xhtml in order to display the correct value from a Resource Bundle
     public enum VersionState {
-        DRAFT, RELEASED, ARCHIVED, DEACCESSIONED
+        DRAFT, RELEASED, ARCHIVED, DEACCESSIONED, LONGTERM_ARCHIVED
     }
 
     public static final int ARCHIVE_NOTE_MAX_LENGTH = 1000;

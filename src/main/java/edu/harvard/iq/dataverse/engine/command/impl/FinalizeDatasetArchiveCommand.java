@@ -77,7 +77,7 @@ public class FinalizeDatasetArchiveCommand extends AbstractPublishDatasetCommand
         
         // validate the physical files before we do anything else: 
         // (unless specifically disabled; or a minor version)
-        if (theDataset.getLatestVersion().getVersionState() != RELEASED
+        if (theDataset.getLatestVersion().getVersionState() != LONGTERM_ARCHIVED
                 && theDataset.getLatestVersion().getMinorVersionNumber() != null
                 && theDataset.getLatestVersion().getMinorVersionNumber().equals((long) 0)
                 && ctxt.systemConfig().isDatafileValidationOnPublishEnabled()) {
@@ -185,7 +185,7 @@ public class FinalizeDatasetArchiveCommand extends AbstractPublishDatasetCommand
             ctxt.engine().submit(new DeletePrivateUrlCommand(getRequest(), theDataset));
         }
         
-	if (theDataset.getLatestVersion().getVersionState() != RELEASED) {
+	if (theDataset.getLatestVersion().getVersionState() != LONGTERM_ARCHIVED) {
             // some imported datasets may already be released.
 
             if (!datasetExternallyReleased) {
@@ -196,7 +196,7 @@ public class FinalizeDatasetArchiveCommand extends AbstractPublishDatasetCommand
                 // a failure - it will remove any locks, and it will send a
                 // proper notification to the user(s). 
             }
-            theDataset.getLatestVersion().setVersionState(RELEASED);
+            theDataset.getLatestVersion().setVersionState(LONGTERM_ARCHIVED);
         }
         
         final Dataset ds = ctxt.em().merge(theDataset);

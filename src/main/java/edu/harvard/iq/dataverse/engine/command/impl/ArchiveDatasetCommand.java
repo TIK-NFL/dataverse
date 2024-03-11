@@ -74,17 +74,17 @@ public class ArchiveDatasetCommand extends AbstractPublishDatasetCommand<Archive
 
         if (theDataset.getPublicationDate() == null) {
             // First Release
-            theDataset.getLatestVersion().setVersionNumber(new Long(1)); // minor release is blocked by #verifyCommandArguments
-            theDataset.getLatestVersion().setMinorVersionNumber(new Long(0));
+            theDataset.getLatestVersion().setVersionNumber(Long.valueOf(1)); // minor release is blocked by #verifyCommandArguments
+            theDataset.getLatestVersion().setMinorVersionNumber(Long.valueOf(0));
             
         } else if ( minorRelease ) {
-            theDataset.getLatestVersion().setVersionNumber(new Long(theDataset.getVersionNumber()));
-            theDataset.getLatestVersion().setMinorVersionNumber(new Long(theDataset.getMinorVersionNumber() + 1));
+            theDataset.getLatestVersion().setVersionNumber(Long.valueOf(theDataset.getVersionNumber()));
+            theDataset.getLatestVersion().setMinorVersionNumber(Long.valueOf(theDataset.getMinorVersionNumber() + 1));
             
         } else {
             // major, non-first release
-            theDataset.getLatestVersion().setVersionNumber(new Long(theDataset.getVersionNumber() + 1));
-            theDataset.getLatestVersion().setMinorVersionNumber(new Long(0));
+            theDataset.getLatestVersion().setVersionNumber(Long.valueOf(theDataset.getVersionNumber() + 1));
+            theDataset.getLatestVersion().setMinorVersionNumber(Long.valueOf(0));
         }
         
         // Perform any optional validation steps, if defined:

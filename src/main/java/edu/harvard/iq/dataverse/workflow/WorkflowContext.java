@@ -20,7 +20,7 @@ import java.util.UUID;
 public class WorkflowContext {
     
     public enum TriggerType {
-        PrePublishDataset, PostPublishDataset
+        PrePublishDataset, PostPublishDataset, ArchiveDataset
     }
     
     private final DataverseRequest request;

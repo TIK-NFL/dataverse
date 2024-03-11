@@ -345,6 +345,14 @@
                                                                 #{bundle['dataset.publish.btn']}
                                                             </p:commandLink>
                                                         </li>
+                                                        <li jsf:rendered="#{showPublishLink}" class="#{DataverseSession.getUser().isSuperuser() and (!DatasetPage.hasValidTermsOfAccess or ( DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview)) ? 'disabled' : ''}">
+                                                            <!-- Archive LINK -->
+                                                            <p:commandLink styleClass="#{!DatasetPage.hasValidTermsOfAccess or (DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview) ? 'disabled' : ''}" 
+                                                                           disabled="#{!DatasetPage.hasValidTermsOfAccess or (DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview)}"
+                                                                           action="#{DatasetPage.processArchiveButton()}">
+                                                                #{bundle['dataset.archive.btn']}
+                                                            </p:commandLink>
+                                                        </li>
                                                         <li jsf:rendered="#{showSubmitForReviewLink}" class="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}">
                                                             <!-- Submit for Review LINK -->
                                                             <p:commandLink class="#{DatasetPage.dataset.latestVersion.inReview or DatasetPage.dataset.locked ? 'disabled' : ''}" 

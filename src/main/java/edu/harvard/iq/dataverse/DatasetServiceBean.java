@@ -942,7 +942,7 @@ public class DatasetServiceBean implements java.io.Serializable {
     
     @Asynchronous
     @TransactionAttribute(TransactionAttributeType.SUPPORTS)
-    public void callFinalizeArchiveCommandAsynchronously(Long datasetId, CommandContext ctxt, DataverseRequest request, boolean isPidPrePublished) {
+    public void callFinalizeArchiveCommandAsynchronously(Long datasetId, CommandContext ctxt, DataverseRequest request) {
 
         // Since we are calling the next command asynchronously anyway - sleep here
         // for a few seconds, just in case, to make sure the database update of
@@ -960,7 +960,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         logger.fine("Running FinalizeDatasetPublicationCommand, asynchronously");
         Dataset theDataset = find(datasetId);
         try {
-            commandEngine.submit(new FinalizeDatasetArchiveCommand(theDataset, request, isPidPrePublished));
+            commandEngine.submit(new FinalizeDatasetArchiveCommand(theDataset, request));
         } catch (CommandException cex) {
             logger.warning("CommandException caught when executing the asynchronous portion of the Dataset Publication Command.");
         }

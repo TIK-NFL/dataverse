@@ -430,7 +430,7 @@ public class WorkflowServiceBean {
                 //Refreshing merges the dataset
                 ctxt = refresh(ctxt);
                 //Then call Finalize
-                engine.submit(new FinalizeDatasetArchiveCommand(ctxt.getDataset(), ctxt.getRequest(), ctxt.getDatasetExternallyReleased()));
+                engine.submit(new FinalizeDatasetArchiveCommand(ctxt.getDataset(), ctxt.getRequest()));
             } else {
                 logger.fine("Removing workflow lock");
                 unlockDataset(ctxt);

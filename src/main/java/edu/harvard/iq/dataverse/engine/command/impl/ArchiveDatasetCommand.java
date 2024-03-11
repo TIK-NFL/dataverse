@@ -232,7 +232,7 @@ public class ArchiveDatasetCommand extends AbstractPublishDatasetCommand<Archive
             //A pre-publication workflow will call FinalizeDatasetPublicationCommand itself when it completes
             if (! prePubWf.isPresent() ) {
                 logger.fine("From onSuccess, calling FinalizeArchiveCommand for dataset " + dataset.getGlobalId().asString());
-                ctxt.datasets().callFinalizeArchiveCommandAsynchronously(dataset.getId(), ctxt, request, datasetExternallyReleased);
+                ctxt.datasets().callFinalizeArchiveCommandAsynchronously(dataset.getId(), ctxt, request);
             } 
             return true;
         }

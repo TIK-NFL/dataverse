@@ -418,7 +418,9 @@ public class WorkflowServiceBean {
                 DatasetLock lock = new DatasetLock(DatasetLock.Reason.finalizePublication, user);
                 Dataset dataset = ctxt.getDataset();
                 lock.setDataset(dataset);
+                boolean validatePhysicalFiles = systemConfig.isDatafileValidationOnPublishEnabled();
                 String info = "Archiving the dataset; "; 
+                info += validatePhysicalFiles ? "Validating Datafiles Asynchronously" : "";
                 lock.setInfo(info);
                 lockDataset(ctxt, lock);
                 ctxt.getDataset().addLock(lock);

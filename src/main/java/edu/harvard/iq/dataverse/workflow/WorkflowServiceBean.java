@@ -11,6 +11,7 @@ import edu.harvard.iq.dataverse.authorization.users.ApiToken;
 import edu.harvard.iq.dataverse.authorization.users.AuthenticatedUser;
 import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
+import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetArchiveCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.FinalizeDatasetPublicationCommand;
 import edu.harvard.iq.dataverse.settings.SettingsServiceBean;
 import edu.harvard.iq.dataverse.util.SystemConfig;
@@ -382,7 +383,7 @@ public class WorkflowServiceBean {
         logger.log(Level.INFO, "Workflow {0} completed.", ctxt.getInvocationId());
         
             try {
-        if ( ctxt.getType() == TriggerType.PrePublishDataset ) {
+            if (ctxt.getType() == TriggerType.PrePublishDataset ) {
                 ctxt = refresh(ctxt);
                 //Now lock for FinalizePublication - this block mirrors that in PublishDatasetCommand
                 AuthenticatedUser user = ctxt.getRequest().getAuthenticatedUser();
@@ -412,6 +413,22 @@ public class WorkflowServiceBean {
                 ctxt = refresh(ctxt);
                 //Then call Finalize
                 engine.submit(new FinalizeDatasetPublicationCommand(ctxt.getDataset(), ctxt.getRequest(), ctxt.getDatasetExternallyReleased()));
+            } else if(ctxt.getType() == TriggerType.ArchiveDataset) {
+                AuthenticatedUser user = ctxt.getRequest().getAuthenticatedUser();
+                DatasetLock lock = new DatasetLock(DatasetLock.Reason.finalizePublication, user);
+                Dataset dataset = ctxt.getDataset();
+                lock.setDataset(dataset);
+                String info = "Archiving the dataset; "; 
+                lock.setInfo(info);
+                lockDataset(ctxt, lock);
+                ctxt.getDataset().addLock(lock);
+                
+                unlockDataset(ctxt);
+                ctxt.setLockId(null); //the workflow lock
+                //Refreshing merges the dataset
+                ctxt = refresh(ctxt);
+                //Then call Finalize
+                engine.submit(new FinalizeDatasetArchiveCommand(ctxt.getDataset(), ctxt.getRequest(), ctxt.getDatasetExternallyReleased()));
             } else {
                 logger.fine("Removing workflow lock");
                 unlockDataset(ctxt);

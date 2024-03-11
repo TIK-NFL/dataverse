@@ -52,21 +52,12 @@ public class FinalizeDatasetArchiveCommand extends AbstractPublishDatasetCommand
 
 
 
-    /**
-     * mirror field from {@link PublishDatasetCommand} of same name
-     */
-    final boolean datasetExternallyReleased;
-    
     List<Dataverse> dataversesToIndex = new ArrayList<>();
     
     public static final String FILE_VALIDATION_ERROR = "FILE VALIDATION ERROR";
     
     public FinalizeDatasetArchiveCommand(Dataset aDataset, DataverseRequest aRequest) {
-        this( aDataset, aRequest, false );
-    }
-    public FinalizeDatasetArchiveCommand(Dataset aDataset, DataverseRequest aRequest, boolean isPidPrePublished) {
         super(aDataset, aRequest);
-	datasetExternallyReleased = isPidPrePublished;
     }
 
     @Override
@@ -188,14 +179,11 @@ public class FinalizeDatasetArchiveCommand extends AbstractPublishDatasetCommand
 	if (theDataset.getLatestVersion().getVersionState() != LONGTERM_ARCHIVED) {
             // some imported datasets may already be released.
 
-            if (!datasetExternallyReleased) {
-                publicizeExternalIdentifier(theDataset, ctxt);
                 // Will throw a CommandException, unless successful.
                 // This will end the execution of the command, but the method 
                 // above takes proper care to "clean up after itself" in case of
                 // a failure - it will remove any locks, and it will send a
                 // proper notification to the user(s). 
-            }
             theDataset.getLatestVersion().setVersionState(LONGTERM_ARCHIVED);
         }
         

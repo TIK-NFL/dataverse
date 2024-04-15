@@ -160,6 +160,9 @@ import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import com.amazonaws.services.s3.model.PartETag;
+import edu.harvard.iq.dataverse.engine.command.impl.ArchiveDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ArchiveDatasetResult;
+import edu.harvard.iq.dataverse.engine.command.impl.CurateArchivedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.settings.JvmSettings;
 
 @Path("datasets")

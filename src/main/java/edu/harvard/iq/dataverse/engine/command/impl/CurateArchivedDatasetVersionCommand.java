@@ -46,7 +46,7 @@ public class CurateArchivedDatasetVersionCommand extends AbstractDatasetCommand<
     @Override
     public Dataset execute(CommandContext ctxt) throws CommandException {
         if (!getUser().isSuperuser()) {
-            throw new IllegalCommandException("Only superusers can curate published dataset versions", this);
+            throw new IllegalCommandException("Only superusers can archive published dataset versions", this);
         }
 
         ctxt.permissions().checkEditDatasetLock(getDataset(), getRequest(), this);
@@ -179,7 +179,7 @@ public class CurateArchivedDatasetVersionCommand extends AbstractDatasetCommand<
             instance.exportAllFormats(getDataset());
         } catch (ExportException ex) {
             // Just like with indexing, a failure to export is not a fatal condition.
-            logger.log(Level.WARNING, "Curate Published DatasetVersion: exception while exporting metadata files:{0}", ex.getMessage());
+            logger.log(Level.WARNING, "Curate Archived DatasetVersion: exception while exporting metadata files:{0}", ex.getMessage());
         }
         
 

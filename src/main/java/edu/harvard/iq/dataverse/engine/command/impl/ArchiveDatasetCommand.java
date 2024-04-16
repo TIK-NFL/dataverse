@@ -102,12 +102,12 @@ public class ArchiveDatasetCommand extends AbstractPublishDatasetCommand<Archive
         }
         
         //ToDo - should this be in onSuccess()? May relate to todo above 
-        Optional<Workflow> prePubWf = ctxt.workflows().getDefaultWorkflow(TriggerType.PrePublishDataset);
+        Optional<Workflow> prePubWf = ctxt.workflows().getDefaultWorkflow(TriggerType.ArchiveDataset);
         if ( prePubWf.isPresent() ) {
             // We start a workflow
             theDataset = ctxt.em().merge(theDataset);
             ctxt.em().flush();
-            ctxt.workflows().start(prePubWf.get(), buildContext(theDataset, TriggerType.PrePublishDataset, datasetExternallyReleased), true);
+            ctxt.workflows().start(prePubWf.get(), buildContext(theDataset, TriggerType.ArchiveDataset, datasetExternallyReleased), true);
             return new ArchiveDatasetResult(theDataset, Status.Workflow);
             
         } else{
@@ -130,7 +130,7 @@ public class ArchiveDatasetCommand extends AbstractPublishDatasetCommand<Archive
             // with the dataset locked for the duration of the operation. 
             
                 
-            String info = "Publishing the dataset; "; 
+            String info = "Archiving the dataset; "; 
             info += validatePhysicalFiles ? "Validating Datafiles Asynchronously" : "";
             
             AuthenticatedUser user = request.getAuthenticatedUser();
@@ -192,7 +192,7 @@ public class ArchiveDatasetCommand extends AbstractPublishDatasetCommand<Archive
         }
         
         if ( getDataset().isLockedFor(DatasetLock.Reason.FileValidationFailed)) {
-            throw new IllegalCommandException("This dataset cannot be published because some files have been found missing or corrupted. " 
+            throw new IllegalCommandException("This dataset cannot be archived because some files have been found missing or corrupted. " 
                     + ". Please contact support to address this.", this);
         }
         
@@ -208,11 +208,11 @@ public class ArchiveDatasetCommand extends AbstractPublishDatasetCommand<Archive
 
             // prevent publishing of 0.1 version
             if (minorRelease && getDataset().getVersions().size() == 1 && getDataset().getLatestVersion().isDraft()) {
-                throw new IllegalCommandException("Cannot publish as minor version. Re-try as major release.", this);
+                throw new IllegalCommandException("Cannot archive as minor version. Re-try as major release.", this);
             }
 
             if (minorRelease && !getDataset().getLatestVersion().isMinorUpdate()) {
-                throw new IllegalCommandException("Cannot release as minor version. Re-try as major release.", this);
+                throw new IllegalCommandException("Cannot archive as minor version. Re-try as major release.", this);
             }
         }
     }
@@ -228,7 +228,7 @@ public class ArchiveDatasetCommand extends AbstractPublishDatasetCommand<Archive
         }
 
         if (dataset != null) {
-            Optional<Workflow> prePubWf = ctxt.workflows().getDefaultWorkflow(TriggerType.PrePublishDataset);
+            Optional<Workflow> prePubWf = ctxt.workflows().getDefaultWorkflow(TriggerType.ArchiveDataset);
             //A pre-publication workflow will call FinalizeDatasetPublicationCommand itself when it completes
             if (! prePubWf.isPresent() ) {
                 logger.fine("From onSuccess, calling FinalizeArchiveCommand for dataset " + dataset.getGlobalId().asString());

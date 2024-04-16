@@ -40,11 +40,9 @@ import jakarta.ejb.TransactionAttribute;
 import jakarta.ejb.TransactionAttributeType;
 import jakarta.inject.Named;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.LockModeType;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.Query;
-import jakarta.persistence.StoredProcedureQuery;
 import jakarta.persistence.TypedQuery;
 import org.apache.commons.lang3.StringUtils;
 
@@ -958,7 +956,7 @@ public class DatasetServiceBean implements java.io.Serializable {
         } catch (Exception ex) {
             logger.warning("Failed to sleep for a second.");
         }
-        logger.fine("Running FinalizeDatasetPublicationCommand, asynchronously");
+        logger.fine("Running FinalizeDatasetArchiveCommand, asynchronously");
         Dataset theDataset = find(datasetId);
         try {
             commandEngine.submit(new FinalizeDatasetArchiveCommand(theDataset, request));

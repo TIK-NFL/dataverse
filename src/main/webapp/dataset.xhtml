@@ -1822,12 +1822,6 @@
                                 </h:outputFormat>
                             </p>
                         </ui:fragment>
-                        <ui:fragment rendered="#{releaseDraft}">
-                            <p:focus for="options"/>
-                            <p class="text-warning">
-                                <span class="glyphicon glyphicon-warning-sign" /> #{bundle['dataset.republish.tip']}
-                            </p>
-                        </ui:fragment>
                         <ui:fragment rendered="#{releaseBoth}">
                             <div class="form-group">
                                 <p class="help-block">
@@ -1843,13 +1837,6 @@
                                 <p class="help-block">
                                     #{bundle['dataset.selectVersionNumber']}
                                 </p>
-                                <p:selectOneRadio id="options" value="#{DatasetPage.releaseRadio}">
-                                    <f:selectItem itemLabel="#{bundle['dataset.minorRelease']} (#{DatasetPage.datasetNextMinorVersion})" itemValue="1" />
-                                    <f:selectItem itemLabel="#{bundle['dataset.majorRelease']} (#{DatasetPage.datasetNextMajorVersion})" itemValue="2" />
-                                    <c:if test="#{dataverseSession.user.isSuperuser()}">
-                                        <f:selectItem rendered="#" itemLabel="#{bundle['dataset.updateRelease']}" itemValue="3" />
-                                    </c:if>
-                                </p:selectOneRadio>
                             </ui:fragment>
                             <p>
                                 <h:outputFormat value="#{bundle['dataset.majorRelease.tip']}" rendered="#{!DatasetPage.dataset.latestVersion.minorUpdate}">

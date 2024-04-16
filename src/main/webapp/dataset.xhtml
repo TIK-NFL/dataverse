@@ -346,7 +346,7 @@
                                                                 #{bundle['dataset.publish.btn']}
                                                             </p:commandLink>
                                                         </li>
-                                                        <li jsf:rendered="#{showPublishLink}" class="#{DataverseSession.getUser().isSuperuser() and (!DatasetPage.hasValidTermsOfAccess or ( DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview)) ? 'disabled' : ''}">
+                                                        <li jsf:rendered="#{showArchiveLink}" class="#{DataverseSession.getUser().isSuperuser() and (!DatasetPage.hasValidTermsOfAccess or ( DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview)) ? 'disabled' : ''}">
                                                             <!-- Archive LINK -->
                                                             <p:commandLink styleClass="#{!DatasetPage.hasValidTermsOfAccess or (DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview) ? 'disabled' : ''}" 
                                                                            disabled="#{!DatasetPage.hasValidTermsOfAccess or (DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview)}"
@@ -1844,7 +1844,7 @@
                                 </h:outputFormat>
                             </p>
                         </ui:fragment>
-                        <c:if test="#{showPublishLink}">
+                        <c:if test="#{showArchiveLink}">
                             <ui:include src="datasetLicenseInfoFragment.xhtml" />
                         </c:if>
                         <ui:fragment  rendered="#{archiveDataset}">

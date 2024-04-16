@@ -111,6 +111,8 @@ import jakarta.faces.validator.ValidatorException;
 import java.util.logging.Level;
 import edu.harvard.iq.dataverse.engine.command.exception.IllegalCommandException;
 import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ArchiveDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.ArchiveDatasetResult;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
@@ -2834,6 +2836,41 @@ public class DatasetPage implements java.io.Serializable {
             JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.only.authenticatedUsers"));
         }
         return returnToDraftVersion();
+    }
+    
+    private String archiveDataset(boolean minor) {
+        if (session.getUser() instanceof AuthenticatedUser) {
+            try {
+                final ArchiveDatasetResult result = commandEngine.submit(
+                    new ArchiveDatasetCommand(dataset, dvRequestService.getDataverseRequest(), minor)
+                );
+                dataset = result.getDataset();
+                // Sucessfully executing PublishDatasetCommand does not guarantee that the dataset
+                // has been published. If a publishing workflow is configured, this may have sent the
+                // dataset into a workflow limbo, potentially waiting for a third party system to complete
+                // the process. So it may be premature to show the "success" message at this point.
+
+                if ( result.isCompleted() ) {
+                    JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.archiveSuccess"));
+                } else {
+                    JH.addMessage(FacesMessage.SEVERITY_WARN, BundleUtil.getStringFromBundle("dataset.locked.message"), BundleUtil.getStringFromBundle("dataset.locked.message.details"));
+                }
+
+            } catch (CommandException ex) {
+                Dataset testDs = datasetService.find(dataset.getId());
+                if (testDs != null && !testDs.isLockedFor(DatasetLock.Reason.FileValidationFailed)) {
+                    // If the dataset could not be published because it has failed
+                    // physical file validation, the messaging will be handled via
+                    // the lock info system.
+                    JsfHelper.addErrorMessage(ex.getLocalizedMessage());
+                }
+                logger.severe(ex.getMessage());
+            }
+
+        } else {
+            JsfHelper.addErrorMessage(BundleUtil.getStringFromBundle("dataset.message.only.authenticatedUsers"));
+        }
+        return returnToDatasetOnly();
     }
 
     @Deprecated

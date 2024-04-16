@@ -1810,7 +1810,6 @@
                             <div class="form-group">
                                 <p jsf:rendered="#{valid}" class="col-sm-12 text-warning">#{bundle['dataset.archive.tip']}</p>
                                 <p jsf:rendered="#{!valid}" class="col-sm-12 text-warning"><b style="color:red;">#{bundle['dataset.message.incomplete.warning']}</b></p>
-                                <p class="col-sm-12 help-block">#{bundle['dataset.archive.terms.tip']}</p>
                             </div>
                         </ui:fragment>
                         <ui:fragment rendered="#{releaseBoth}">
@@ -1847,15 +1846,10 @@
                                 </h:outputFormat>
                             </p>
                         </ui:fragment>
-                        <ui:fragment  rendered="#{archiveDataset}">
-                            <div class="form-group">
-                                <p class="col-sm-12 help-block">#{bundle['dataset.archive.terms.help.tip']}</p>
-                            </div>
-                        </ui:fragment>
                         <div class="button-block">
                             <p:commandButton rendered="#{valid}" styleClass="btn btn-default" value="#{bundle.continue}" 
                                              onclick="PF('archiveDataset').hide();
-                                                     PF('blockDatasetForm').hide();" action="#{DatasetPage.releaseDataset}" />
+                                                     PF('blockDatasetForm').hide();" action="#{DatasetPage.archiveDataset}" />
                             <button class="btn btn-link" onclick="PF('archiveDataset').hide();
                                     PF('blockDatasetForm').hide();" type="button">
                                 #{bundle.cancel}

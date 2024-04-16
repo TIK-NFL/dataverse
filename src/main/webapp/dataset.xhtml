@@ -1847,9 +1847,6 @@
                                 </h:outputFormat>
                             </p>
                         </ui:fragment>
-                        <c:if test="#{showArchiveLink}">
-                            <ui:include src="datasetLicenseInfoFragment.xhtml" />
-                        </c:if>
                         <ui:fragment  rendered="#{archiveDataset}">
                             <div class="form-group">
                                 <p class="col-sm-12 help-block">#{bundle['dataset.archive.terms.help.tip']}</p>

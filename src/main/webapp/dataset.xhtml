@@ -1802,12 +1802,12 @@
                             </button>
                         </div>
                     </p:dialog>
-                    <p:dialog id="archiveDataset" width="70%" header="#{bundle['archive.dataset.header']}" widgetVar="archiveDataset" modal="true">
+                    <p:dialog id="archiveDataset" width="70%" header="#{bundle['dataset.archive.header']}" widgetVar="archiveDataset" modal="true">
                         <ui:fragment rendered="#{archiveDataset}">
                             <div class="form-group">
-                                <p jsf:rendered="#{valid}" class="col-sm-12 text-warning">#{bundle['archive.dataset.tip']}</p>
+                                <p jsf:rendered="#{valid}" class="col-sm-12 text-warning">#{bundle['dataset.archive.tip']}</p>
                                 <p jsf:rendered="#{!valid}" class="col-sm-12 text-warning"><b style="color:red;">#{bundle['dataset.message.incomplete.warning']}</b></p>
-                                <p class="col-sm-12 help-block">#{bundle['archive.dataset.terms.tip']}</p>
+                                <p class="col-sm-12 help-block">#{bundle['dataset.archive.terms.tip']}</p>
                             </div>
                         </ui:fragment>
                         <ui:fragment rendered="#{releaseBoth}">
@@ -1831,7 +1831,7 @@
                         <ui:fragment rendered="#{releaseBoth}">
                             <div class="form-group">
                                 <p class="help-block">
-                                    #{bundle['archive.datasetBoth.tip']}
+                                    #{bundle['dataset.archiveBoth.tip']}
                                 </p>
                             </div>
                         </ui:fragment>
@@ -1862,7 +1862,7 @@
                         </c:if>
                         <ui:fragment  rendered="#{archiveDataset}">
                             <div class="form-group">
-                                <p class="col-sm-12 help-block">#{bundle['archive.dataset.terms.help.tip']}</p>
+                                <p class="col-sm-12 help-block">#{bundle['dataset.archive.terms.help.tip']}</p>
                             </div>
                         </ui:fragment>
                         <div class="button-block">

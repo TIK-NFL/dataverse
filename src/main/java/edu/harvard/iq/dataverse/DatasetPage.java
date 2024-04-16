@@ -4307,6 +4307,13 @@ public class DatasetPage implements java.io.Serializable {
         }
        return false;
     }
+    
+    public boolean archiveDatasetPopup(){
+        if (!dataset.isReleased()) {
+            return dataset.getOwner().isReleased();
+        }
+       return false;
+    }
 
     public boolean publishBothPopup() {
         if (!dataset.getOwner().isReleased()) {

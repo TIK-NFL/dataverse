@@ -2842,7 +2842,7 @@ public class DatasetPage implements java.io.Serializable {
      * @author Florian Fritze <florian.fritze@ub.uni-stuttgart.de>
      * @return 
      */
-    private String archiveDataset() {
+    public String archiveDataset() {
         if (session.getUser() instanceof AuthenticatedUser) {
             try {
                 final ArchiveDatasetResult result = commandEngine.submit(

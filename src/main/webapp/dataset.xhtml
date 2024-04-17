@@ -353,7 +353,7 @@
                                                             <!-- Archive LINK -->
                                                             <p:commandLink styleClass="#{!DatasetPage.hasValidTermsOfAccess or (DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview) ? 'disabled' : ''}" 
                                                                            disabled="#{!DatasetPage.hasValidTermsOfAccess or (DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview)}"
-                                                                           action="#{DatasetPage.processArchiveButton()}">
+                                                                           action="#{DatasetPage.processArchiveButton}">
                                                                 #{bundle['dataset.archive.btn']}
                                                             </p:commandLink>
                                                         </li>

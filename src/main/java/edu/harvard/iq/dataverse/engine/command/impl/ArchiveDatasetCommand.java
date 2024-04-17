@@ -40,6 +40,7 @@ public class ArchiveDatasetCommand extends AbstractPublishDatasetCommand<Archive
 
     public ArchiveDatasetCommand(Dataset datasetIn, DataverseRequest aRequest) {
         super(datasetIn, aRequest);
+        this.request = aRequest;
     }
     
     /** 

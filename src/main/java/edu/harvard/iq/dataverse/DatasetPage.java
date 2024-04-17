@@ -2719,7 +2719,7 @@ public class DatasetPage implements java.io.Serializable {
                 return "Invalid Choice";
         }
     }
-
+    
     private void releaseParentDV(){
         if (session.getUser() instanceof AuthenticatedUser) {
             PublishDataverseCommand cmd = new PublishDataverseCommand(dvRequestService.getDataverseRequest(), dataset.getOwner());
@@ -2838,11 +2838,15 @@ public class DatasetPage implements java.io.Serializable {
         return returnToDraftVersion();
     }
     
-    private String archiveDataset(boolean minor) {
+    /**
+     * @author Florian Fritze <florian.fritze@ub.uni-stuttgart.de>
+     * @return 
+     */
+    private String archiveDataset() {
         if (session.getUser() instanceof AuthenticatedUser) {
             try {
                 final ArchiveDatasetResult result = commandEngine.submit(
-                    new ArchiveDatasetCommand(dataset, dvRequestService.getDataverseRequest(), minor)
+                    new ArchiveDatasetCommand(dataset, dvRequestService.getDataverseRequest())
                 );
                 dataset = result.getDataset();
                 // Sucessfully executing PublishDatasetCommand does not guarantee that the dataset

@@ -29,31 +29,25 @@ import edu.harvard.iq.dataverse.util.StringUtil;
  * 
  * @author skraffmiller
  * @author michbarsinai
+ * @author Florian Fritze <florian.fritze@ub.uni-stuttgart.de>
  */
 @RequiredPermissions(Permission.PublishDataset)
 public class ArchiveDatasetCommand extends AbstractPublishDatasetCommand<ArchiveDatasetResult> {
     private static final Logger logger = Logger.getLogger(ArchiveDatasetCommand.class.getName());
-    boolean minorRelease;
     DataverseRequest request;
+    
+    final boolean datasetExternallyReleased = false;
+
+    public ArchiveDatasetCommand(Dataset datasetIn, DataverseRequest aRequest) {
+        super(datasetIn, aRequest);
+    }
     
     /** 
      * The dataset was already released by an external system, and now Dataverse
      * is just internally marking this release version as released. This is happening
      * in scenarios like import or migration.
      */
-    final boolean datasetExternallyReleased;
     
-    public ArchiveDatasetCommand(Dataset datasetIn, DataverseRequest aRequest, boolean minor) {
-        this( datasetIn, aRequest, minor, false );
-    }
-    
-    public ArchiveDatasetCommand(Dataset datasetIn, DataverseRequest aRequest, boolean minor, boolean isPidPrePublished) {
-        super(datasetIn, aRequest);
-        minorRelease = minor;
-        datasetExternallyReleased = isPidPrePublished;
-        request = aRequest;
-    }
-
     @Override
     public ArchiveDatasetResult execute(CommandContext ctxt) throws CommandException {
         
@@ -77,10 +71,6 @@ public class ArchiveDatasetCommand extends AbstractPublishDatasetCommand<Archive
             theDataset.getLatestVersion().setVersionNumber(Long.valueOf(1)); // minor release is blocked by #verifyCommandArguments
             theDataset.getLatestVersion().setMinorVersionNumber(Long.valueOf(0));
             
-        } else if ( minorRelease ) {
-            theDataset.getLatestVersion().setVersionNumber(Long.valueOf(theDataset.getVersionNumber()));
-            theDataset.getLatestVersion().setMinorVersionNumber(Long.valueOf(theDataset.getMinorVersionNumber() + 1));
-            
         } else {
             // major, non-first release
             theDataset.getLatestVersion().setVersionNumber(Long.valueOf(theDataset.getVersionNumber() + 1));
@@ -101,40 +91,28 @@ public class ArchiveDatasetCommand extends AbstractPublishDatasetCommand<Archive
             } 
         }
         
-        //ToDo - should this be in onSuccess()? May relate to todo above 
-        Optional<Workflow> prePubWf = ctxt.workflows().getDefaultWorkflow(TriggerType.ArchiveDataset);
-        if ( prePubWf.isPresent() ) {
-            // We start a workflow
-            theDataset = ctxt.em().merge(theDataset);
-            ctxt.em().flush();
-            ctxt.workflows().start(prePubWf.get(), buildContext(theDataset, TriggerType.ArchiveDataset, datasetExternallyReleased), true);
-            return new ArchiveDatasetResult(theDataset, Status.Workflow);
-            
-        } else{
-            // We will skip trying to register the global identifiers for datafiles 
-            // if "dependent" file-level identifiers are requested, AND the naming 
-            // protocol of the dataset global id is different from the 
-            // one currently configured for the Dataverse. This is to specifically 
-            // address the issue with the datasets with handle ids registered, 
-            // that are currently configured to use DOI.
-            // If we are registering file-level identifiers, and there are more 
-            // than the configured limit number of files, then call Finalize 
-            // asychronously (default is 10)
-            // ...
-            // Additionaly in 4.9.3 we have added a system variable to disable 
-            // registering file PIDs on the installation level.
-            
-            boolean validatePhysicalFiles = ctxt.systemConfig().isDatafileValidationOnPublishEnabled();
+        // We will skip trying to register the global identifiers for datafiles 
+        // if "dependent" file-level identifiers are requested, AND the naming 
+        // protocol of the dataset global id is different from the 
+        // one currently configured for the Dataverse. This is to specifically 
+        // address the issue with the datasets with handle ids registered, 
+        // that are currently configured to use DOI.
+        // If we are registering file-level identifiers, and there are more 
+        // than the configured limit number of files, then call Finalize 
+        // asychronously (default is 10)
+        // ...
+        // Additionaly in 4.9.3 we have added a system variable to disable 
+        // registering file PIDs on the installation level.
 
-            // As of v5.0, publishing a dataset is always done asynchronously, 
-            // with the dataset locked for the duration of the operation. 
-            
-                
-            String info = "Archiving the dataset; "; 
-            info += validatePhysicalFiles ? "Validating Datafiles Asynchronously" : "";
-            
-            AuthenticatedUser user = request.getAuthenticatedUser();
-            /*
+        boolean validatePhysicalFiles = ctxt.systemConfig().isDatafileValidationOnPublishEnabled();
+
+        // As of v5.0, publishing a dataset is always done asynchronously, 
+        // with the dataset locked for the duration of the operation. 
+        String info = "Archiving the dataset; ";
+        info += validatePhysicalFiles ? "Validating Datafiles Asynchronously" : "";
+
+        AuthenticatedUser user = request.getAuthenticatedUser();
+        /*
              * datasetExternallyReleased is only true in the case of the
              * Dataverses.importDataset() and importDatasetDDI() methods. In that case, we
              * are still in the transaction that creates theDataset, so
@@ -146,19 +124,18 @@ public class ArchiveDatasetCommand extends AbstractPublishDatasetCommand<Archive
              * Thus, we can/need to skip creating the lock. Since the calls to removeLocks
              * in FinalizeDatasetPublicationCommand search for and remove existing locks, if
              * one doesn't exist, the removal is a no-op in this case.
-             */
-            if (!datasetExternallyReleased) {
-                DatasetLock lock = new DatasetLock(DatasetLock.Reason.finalizePublication, user);
-                lock.setDataset(theDataset);
-                lock.setInfo(info);
-                ctxt.datasets().addDatasetLock(theDataset, lock);
-            }
-            theDataset = ctxt.em().merge(theDataset);
-            // The call to FinalizePublicationCommand has been moved to the new @onSuccess()
-            // method:
-            //ctxt.datasets().callFinalizePublishCommandAsynchronously(theDataset.getId(), ctxt, request, datasetExternallyReleased);
-            return new ArchiveDatasetResult(theDataset, Status.Inprogress);
+         */
+        if (!datasetExternallyReleased) {
+            DatasetLock lock = new DatasetLock(DatasetLock.Reason.finalizePublication, user);
+            lock.setDataset(theDataset);
+            lock.setInfo(info);
+            ctxt.datasets().addDatasetLock(theDataset, lock);
         }
+        theDataset = ctxt.em().merge(theDataset);
+        // The call to FinalizePublicationCommand has been moved to the new @onSuccess()
+        // method:
+        //ctxt.datasets().callFinalizePublishCommandAsynchronously(theDataset.getId(), ctxt, request, datasetExternallyReleased);
+        return new ArchiveDatasetResult(theDataset, Status.Inprogress);
     }
     
     /**
@@ -198,7 +175,7 @@ public class ArchiveDatasetCommand extends AbstractPublishDatasetCommand<Archive
         
         if ( datasetExternallyReleased ) {
             if ( ! getDataset().getLatestVersion().isReleased() ) {
-                throw new IllegalCommandException("Latest version of dataset " + getDataset().getIdentifier() + " is not marked as releasd.", this);
+                throw new IllegalCommandException("Latest version of dataset " + getDataset().getIdentifier() + " is not marked as released.", this);
             }
                 
         } else {
@@ -206,14 +183,6 @@ public class ArchiveDatasetCommand extends AbstractPublishDatasetCommand<Archive
                 throw new IllegalCommandException("Latest version of dataset " + getDataset().getIdentifier() + " is already released. Only draft versions can be released.", this);
             }
 
-            // prevent publishing of 0.1 version
-            if (minorRelease && getDataset().getVersions().size() == 1 && getDataset().getLatestVersion().isDraft()) {
-                throw new IllegalCommandException("Cannot archive as minor version. Re-try as major release.", this);
-            }
-
-            if (minorRelease && !getDataset().getLatestVersion().isMinorUpdate()) {
-                throw new IllegalCommandException("Cannot archive as minor version. Re-try as major release.", this);
-            }
         }
     }
     

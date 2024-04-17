@@ -1361,6 +1361,14 @@ public class Datasets extends AbstractApiBean {
         }
     }
 
+    /**
+     * @author Florian Fritze <florian.fritze@ub.uni-stuttgart.de>
+     * @param crc
+     * @param id
+     * @param type
+     * @param mustBeIndexed
+     * @return 
+     */
     @POST
     @AuthRequired
     @Path("{id}/actions/:archive")
@@ -1393,10 +1401,10 @@ public class Datasets extends AbstractApiBean {
 
             Dataset ds = findDatasetOrDie(id);
             
-            boolean hasValidTerms = TermsOfUseAndAccessValidator.isTOUAValid(ds.getLatestVersion().getTermsOfUseAndAccess(), null);
-            if (!hasValidTerms) {
-                return error(Status.CONFLICT, BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
-            }
+//            boolean hasValidTerms = TermsOfUseAndAccessValidator.isTOUAValid(ds.getLatestVersion().getTermsOfUseAndAccess(), null);
+//            if (!hasValidTerms) {
+//                return error(Status.CONFLICT, BundleUtil.getStringFromBundle("dataset.message.toua.invalid"));
+//            }
             
             if (mustBeIndexed) {
                 logger.fine("IT: " + ds.getIndexTime());
@@ -1452,8 +1460,7 @@ public class Datasets extends AbstractApiBean {
                 }
             } else {
                 ArchiveDatasetResult res = execCommand(new ArchiveDatasetCommand(ds,
-                        createDataverseRequest(user),
-                        isMinor));
+                        createDataverseRequest(user)));
                 return res.isWorkflow() ? accepted(json(res.getDataset())) : ok(json(res.getDataset()));
             }
         } catch (WrappedResponse ex) {

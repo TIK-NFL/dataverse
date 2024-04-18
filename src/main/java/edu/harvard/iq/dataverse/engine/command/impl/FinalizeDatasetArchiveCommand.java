@@ -211,7 +211,7 @@ public class FinalizeDatasetArchiveCommand extends AbstractPublishDatasetCommand
         try{
             dataset = (Dataset) r;
         } catch (ClassCastException e){
-            dataset  = ((PublishDatasetResult) r).getDataset();
+            dataset  = ((ArchiveDatasetResult) r).getDataset();
         }
         
         try {

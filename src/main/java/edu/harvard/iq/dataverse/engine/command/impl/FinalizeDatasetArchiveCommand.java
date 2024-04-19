@@ -123,7 +123,7 @@ public class FinalizeDatasetArchiveCommand extends AbstractPublishDatasetCommand
         // update metadata
         if (theDataset.getLatestVersion().getReleaseTime() == null) {
             // Allow migrated versions to keep original release dates
-            theDataset.getLatestVersion().setLongTermArchiveTime(getTimestamp());
+            theDataset.getLatestVersion().setReleaseTime(getTimestamp());
         }
         theDataset.getLatestVersion().setLastUpdateTime(getTimestamp());
         theDataset.setModificationTime(getTimestamp());
@@ -211,7 +211,7 @@ public class FinalizeDatasetArchiveCommand extends AbstractPublishDatasetCommand
         try{
             dataset = (Dataset) r;
         } catch (ClassCastException e){
-            dataset  = ((PublishDatasetResult) r).getDataset();
+            dataset  = ((ArchiveDatasetResult) r).getDataset();
         }
         
         try {

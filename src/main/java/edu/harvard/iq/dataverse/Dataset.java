@@ -481,9 +481,6 @@ public class Dataset extends DvObjectContainer {
             if (version.isReleased()) {
                 return version;
             }
-            if (version.isLongTermArchived()) {
-                return version;
-            }
         }
         return null;
     }

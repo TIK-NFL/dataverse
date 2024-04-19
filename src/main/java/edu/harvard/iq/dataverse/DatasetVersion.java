@@ -603,10 +603,6 @@ public class DatasetVersion implements Serializable {
     public boolean isArchived() {
         return versionState.equals(VersionState.ARCHIVED);
     }
-    
-    public boolean isLongTermArchived() {
-        return versionState.equals(VersionState.LONGTERM_ARCHIVED);
-    }
 
     public boolean isDeaccessioned() {
         return versionState.equals(VersionState.DEACCESSIONED);

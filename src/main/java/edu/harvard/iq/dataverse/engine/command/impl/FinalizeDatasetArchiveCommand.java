@@ -19,14 +19,14 @@ import edu.harvard.iq.dataverse.engine.command.CommandContext;
 import edu.harvard.iq.dataverse.engine.command.DataverseRequest;
 import edu.harvard.iq.dataverse.engine.command.RequiredPermissions;
 import edu.harvard.iq.dataverse.engine.command.exception.CommandException;
-import edu.harvard.iq.dataverse.export.ExportService;
+//import edu.harvard.iq.dataverse.export.ExportService;
 import edu.harvard.iq.dataverse.privateurl.PrivateUrl;
 import edu.harvard.iq.dataverse.util.BundleUtil;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
-import java.util.logging.Level;
+//import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import edu.harvard.iq.dataverse.batch.util.LoggingUtil;
@@ -96,25 +96,25 @@ public class FinalizeDatasetArchiveCommand extends AbstractPublishDatasetCommand
             // the code below replicates the logic that used to be in the method 
             // Dataset.getCitationDate() that calculated this adjusted date in real time.
             
-            Timestamp latestEmbargoDate = null; 
-            for (DataFile dataFile : theDataset.getFiles()) {
-                // this is the first version of the dataset that is being published. 
-                // therefore we can iterate through .getFiles() instead of obtaining
-                // the DataFiles by going through the FileMetadatas in the current version.
-                Embargo embargo = dataFile.getEmbargo();
-                if (embargo != null) {
-                    // "dataAvailable" is not nullable in the Embargo class, no need for a null check
-                    Timestamp embargoDate = Timestamp.valueOf(embargo.getDateAvailable().atStartOfDay());
-                    if (latestEmbargoDate == null || latestEmbargoDate.compareTo(embargoDate) < 0) {
-                        latestEmbargoDate = embargoDate;
-                    }
-                }
-            }
-            // the above loop could be easily replaced with a database query; 
-            // but we iterate through .getFiles() elsewhere in the command, when 
-            // updating and/or registering the files, so it should not result in 
-            // an extra performance hit. 
-            theDataset.setEmbargoCitationDate(latestEmbargoDate);
+//            Timestamp latestEmbargoDate = null; 
+//            for (DataFile dataFile : theDataset.getFiles()) {
+//                // this is the first version of the dataset that is being published. 
+//                // therefore we can iterate through .getFiles() instead of obtaining
+//                // the DataFiles by going through the FileMetadatas in the current version.
+//                Embargo embargo = dataFile.getEmbargo();
+//                if (embargo != null) {
+//                    // "dataAvailable" is not nullable in the Embargo class, no need for a null check
+//                    Timestamp embargoDate = Timestamp.valueOf(embargo.getDateAvailable().atStartOfDay());
+//                    if (latestEmbargoDate == null || latestEmbargoDate.compareTo(embargoDate) < 0) {
+//                        latestEmbargoDate = embargoDate;
+//                    }
+//                }
+//            }
+//            // the above loop could be easily replaced with a database query; 
+//            // but we iterate through .getFiles() elsewhere in the command, when 
+//            // updating and/or registering the files, so it should not result in 
+//            // an extra performance hit. 
+//            theDataset.setEmbargoCitationDate(latestEmbargoDate);
         } 
 
         //Clear any external status

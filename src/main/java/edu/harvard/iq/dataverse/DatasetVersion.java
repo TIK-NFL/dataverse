@@ -171,6 +171,9 @@ public class DatasetVersion implements Serializable {
     private Date releaseTime;
     
     @Temporal(value = TemporalType.TIMESTAMP)
+    private Date longTermArchiveTime;
+    
+    @Temporal(value = TemporalType.TIMESTAMP)
     private Date archiveTime;
     
     @Size(min=0, max=ARCHIVE_NOTE_MAX_LENGTH)
@@ -456,6 +459,10 @@ public class DatasetVersion implements Serializable {
 
     public void setReleaseTime(Date releaseTime) {
         this.releaseTime = releaseTime;
+    }
+    
+    public void setLongTermArchiveTime(Date releaseTime) {
+        this.longTermArchiveTime = releaseTime;
     }
 
     public List<DatasetVersionUser> getDatasetVersionUsers() {

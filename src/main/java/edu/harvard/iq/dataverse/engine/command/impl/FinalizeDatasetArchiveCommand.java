@@ -123,7 +123,7 @@ public class FinalizeDatasetArchiveCommand extends AbstractPublishDatasetCommand
         // update metadata
         if (theDataset.getLatestVersion().getReleaseTime() == null) {
             // Allow migrated versions to keep original release dates
-            theDataset.getLatestVersion().setReleaseTime(getTimestamp());
+            theDataset.getLatestVersion().setLongTermArchiveTime(getTimestamp());
         }
         theDataset.getLatestVersion().setLastUpdateTime(getTimestamp());
         theDataset.setModificationTime(getTimestamp());
@@ -238,19 +238,19 @@ public class FinalizeDatasetArchiveCommand extends AbstractPublishDatasetCommand
 
         // Metadata export:
         
-        try {
-            ExportService instance = ExportService.getInstance();
-            instance.exportAllFormats(dataset);
-            dataset = ctxt.datasets().merge(dataset); 
-        } catch (Exception ex) {
-            // Something went wrong!
-            // Just like with indexing, a failure to export is not a fatal
-            // condition. We'll just log the error as a warning and keep
-            // going:
-            logger.log(Level.WARNING, "Finalization: exception caught while exporting: "+ex.getMessage(), ex);
-            // ... but it is important to only update the export time stamp if the 
-            // export was indeed successful.
-        }        
+//        try {
+//            ExportService instance = ExportService.getInstance();
+//            instance.exportAllFormats(dataset);
+//            dataset = ctxt.datasets().merge(dataset); 
+//        } catch (Exception ex) {
+//            // Something went wrong!
+//            // Just like with indexing, a failure to export is not a fatal
+//            // condition. We'll just log the error as a warning and keep
+//            // going:
+//            logger.log(Level.WARNING, "Finalization: exception caught while exporting: "+ex.getMessage(), ex);
+//            // ... but it is important to only update the export time stamp if the 
+//            // export was indeed successful.
+//        }        
         
         return retVal;
     }

@@ -12,6 +12,7 @@ var inreview = '';
 var unpublished = '';
 var published = '';
 var deaccessioned = '';
+var archived = '';
 var mydatato = '';
 var mydataof = '';
 
@@ -492,6 +493,12 @@ function submit_my_data_search(){
                 var y = $("span.label.deaccessioned");
                 for (var i = 0; i < y.length; i++) {
                     y[i].innerHTML = deaccessioned;
+                }
+            }
+            if ($("span.label.archived")) {
+                var y = $("span.label.archived");
+                for (var i = 0; i < y.length; i++) {
+                    y[i].innerHTML = archived;
                 }
             }
             if ($("span.label.incomplete")) {

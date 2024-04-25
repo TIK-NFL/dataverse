@@ -393,7 +393,11 @@ public class DatasetPage implements java.io.Serializable {
     }
     
     public boolean isArchived() {
-        return this.workingVersion.getVersionNote().equals("Archived Dataset");
+        if(this.workingVersion.getVersionNote() != null) {
+            return this.workingVersion.getVersionNote().equals("Archived Dataset");
+        } else {
+            return false;
+        }
     }
 
     public String getTermsGuestbookPopupAction(){

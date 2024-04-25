@@ -34,7 +34,7 @@
         {% if card_info.is_in_review_state %}<span class="label label-success inreview"></span> {% endif %}
         {% if card_info.is_unpublished_state %}<span class="label label-warning unpublished"></span> {% endif %}
         {% if card_info.is_published %} <span class="label label-warning published"></span> {% endif %}
-        {%- assign deaccession_reason = card_info.deaccession_reason -%}
+        {%- set deaccession_reason = card_info.deaccession_reason -%}
         {% if card_info.is_deaccesioned and deaccession_reason != "Archived Dataset" %} <span class="label label-danger deaccessioned"></span> {% endif %}
         {% if card_info.is_deaccesioned and deaccession_reason == "Archived Dataset" %} <span class="label label-danger archived"></span> {% endif %}
         {% if not card_info.is_valid %} <span class="label label-danger incomplete"></span> {% endif %}

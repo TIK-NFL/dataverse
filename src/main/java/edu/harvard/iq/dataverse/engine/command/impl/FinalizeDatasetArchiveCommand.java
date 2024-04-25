@@ -184,6 +184,7 @@ public class FinalizeDatasetArchiveCommand extends AbstractPublishDatasetCommand
                 // a failure - it will remove any locks, and it will send a
                 // proper notification to the user(s). 
             theDataset.getLatestVersion().setVersionState(DEACCESSIONED);
+            theDataset.getLatestVersion().setVersionNote("Archived Dataset");
         }
         
         final Dataset ds = ctxt.em().merge(theDataset);

@@ -316,7 +316,7 @@ public class FileDownloadServiceBean implements java.io.Serializable {
             Long fileMetadataId) {
         String fileDownloadUrl = FileUtil.getFileDownloadUrlPath(downloadType, fileId, guestBookRecordAlreadyWritten,
                 fileMetadataId);
-        if (downloadType.equals("GlobusTransfer")) {
+        if ("GlobusTransfer".equals(downloadType)) {
             PrimeFaces.current().executeScript(URLTokenUtil.getScriptForUrl(fileDownloadUrl));
         } else {
             logger.fine("Redirecting to file download url: " + fileDownloadUrl);
@@ -427,13 +427,13 @@ public class FileDownloadServiceBean implements java.io.Serializable {
         HttpServletResponse response = (HttpServletResponse) ctx.getExternalContext().getResponse();
         response.setContentType("text/xml");
         response.setHeader("Content-Disposition", fileNameString);
-
         try {
             ServletOutputStream out = response.getOutputStream();
             citation.writeAsEndNoteCitation(out);
             out.flush();
             ctx.responseComplete();
         } catch (IOException e) {
+
         }
     }
     

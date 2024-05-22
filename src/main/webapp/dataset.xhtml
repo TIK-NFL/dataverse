@@ -349,7 +349,7 @@
                                                                 #{bundle['dataset.publish.btn']}
                                                             </p:commandLink>
                                                         </li>
-                                                        <li jsf:rendered="#{showArchiveLink}" class="#{DataverseSession.getUser().isSuperuser() ? 'disabled' : ''}">
+                                                        <li jsf:rendered="#{showArchiveLink}" class="#{dataverseSession.user.isSuperuser() ? '' : 'disabled'}">
                                                             <!-- Archive LINK -->
                                                             <p:commandLink styleClass="#{!DatasetPage.hasValidTermsOfAccess or (DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview) ? 'disabled' : ''}" 
                                                                            disabled="#{!DatasetPage.hasValidTermsOfAccess or (DatasetPage.locked and !DatasetPage.dataset.latestVersion.inReview)}"

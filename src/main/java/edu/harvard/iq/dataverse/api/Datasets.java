@@ -1420,6 +1420,7 @@ public class Datasets extends AbstractApiBean {
              */
             String errorMsg = null;
             Optional<Workflow> prePubWf = wfService.getDefaultWorkflow(TriggerType.PrePublishDataset);
+            Optional<Workflow> archPubWf = wfService.getDefaultWorkflow(TriggerType.ArchiveDataset);
 
             try {
                 // ToDo - should this be in onSuccess()? May relate to todo above
@@ -1427,6 +1428,11 @@ public class Datasets extends AbstractApiBean {
                     // Start the workflow, the workflow will call FinalizeDatasetPublication later
                     wfService.start(prePubWf.get(),
                             new WorkflowContext(createDataverseRequest(user), ds, TriggerType.PrePublishDataset, !contactPIDProvider),
+                            false);
+                } else if (archPubWf.isPresent()) {
+                    // Start the workflow, the workflow will call FinalizeDatasetPublication later
+                    wfService.start(archPubWf.get(),
+                            new WorkflowContext(createDataverseRequest(user), ds, TriggerType.ArchiveDataset, !contactPIDProvider),
                             false);
                 } else {
                     FinalizeDatasetPublicationCommand cmd = new FinalizeDatasetPublicationCommand(ds,
@@ -1437,7 +1443,7 @@ public class Datasets extends AbstractApiBean {
                 errorMsg = BundleUtil.getStringFromBundle("datasetversion.update.failure") + " - " + ex.toString();
                 logger.severe(ex.getMessage());
             }
-
+            
             if (errorMsg != null) {
                 return error(Response.Status.INTERNAL_SERVER_ERROR, errorMsg);
             } else {

@@ -92,51 +92,62 @@ public class ArchiveDatasetCommand extends AbstractPublishDatasetCommand<Archive
             } 
         }
         
-        // We will skip trying to register the global identifiers for datafiles 
-        // if "dependent" file-level identifiers are requested, AND the naming 
-        // protocol of the dataset global id is different from the 
-        // one currently configured for the Dataverse. This is to specifically 
-        // address the issue with the datasets with handle ids registered, 
-        // that are currently configured to use DOI.
-        // If we are registering file-level identifiers, and there are more 
-        // than the configured limit number of files, then call Finalize 
-        // asychronously (default is 10)
-        // ...
-        // Additionaly in 4.9.3 we have added a system variable to disable 
-        // registering file PIDs on the installation level.
+        //ToDo - should this be in onSuccess()? May relate to todo above 
+        Optional<Workflow> archPubWf = ctxt.workflows().getDefaultWorkflow(TriggerType.ArchiveDataset);
+        if ( archPubWf.isPresent() ) {
+            // We start a workflow
+            theDataset = ctxt.em().merge(theDataset);
+            ctxt.em().flush();
+            ctxt.workflows().start(archPubWf.get(), buildContext(theDataset, TriggerType.ArchiveDataset, datasetExternallyReleased), true);
+            return new ArchiveDatasetResult(theDataset, Status.Workflow);
+            
+        } else {
+            // We will skip trying to register the global identifiers for datafiles 
+            // if "dependent" file-level identifiers are requested, AND the naming 
+            // protocol of the dataset global id is different from the 
+            // one currently configured for the Dataverse. This is to specifically 
+            // address the issue with the datasets with handle ids registered, 
+            // that are currently configured to use DOI.
+            // If we are registering file-level identifiers, and there are more 
+            // than the configured limit number of files, then call Finalize 
+            // asychronously (default is 10)
+            // ...
+            // Additionaly in 4.9.3 we have added a system variable to disable 
+            // registering file PIDs on the installation level.
 
-        boolean validatePhysicalFiles = ctxt.systemConfig().isDatafileValidationOnPublishEnabled();
+            boolean validatePhysicalFiles = ctxt.systemConfig().isDatafileValidationOnPublishEnabled();
 
-        // As of v5.0, publishing a dataset is always done asynchronously, 
-        // with the dataset locked for the duration of the operation. 
-        String info = "Archiving the dataset; ";
-        info += validatePhysicalFiles ? "Validating Datafiles Asynchronously" : "";
+            // As of v5.0, publishing a dataset is always done asynchronously, 
+            // with the dataset locked for the duration of the operation. 
+            String info = "Archiving the dataset; ";
+            info += validatePhysicalFiles ? "Validating Datafiles Asynchronously" : "";
 
-        AuthenticatedUser user = request.getAuthenticatedUser();
-        /*
-             * datasetExternallyReleased is only true in the case of the
-             * Dataverses.importDataset() and importDatasetDDI() methods. In that case, we
-             * are still in the transaction that creates theDataset, so
-             * A) Trying to create a DatasetLock referncing that dataset in a new 
-             * transaction (as ctxt.datasets().addDatasetLock() does) will fail since the 
-             * dataset doesn't yet exist, and 
-             * B) a lock isn't needed because no one can be trying to edit it yet (as it
-             * doesn't exist).
-             * Thus, we can/need to skip creating the lock. Since the calls to removeLocks
-             * in FinalizeDatasetPublicationCommand search for and remove existing locks, if
-             * one doesn't exist, the removal is a no-op in this case.
-         */
-        if (!datasetExternallyReleased) {
-            DatasetLock lock = new DatasetLock(DatasetLock.Reason.finalizePublication, user);
-            lock.setDataset(theDataset);
-            lock.setInfo(info);
-            ctxt.datasets().addDatasetLock(theDataset, lock);
+            AuthenticatedUser user = request.getAuthenticatedUser();
+            /*
+                 * datasetExternallyReleased is only true in the case of the
+                 * Dataverses.importDataset() and importDatasetDDI() methods. In that case, we
+                 * are still in the transaction that creates theDataset, so
+                 * A) Trying to create a DatasetLock referncing that dataset in a new 
+                 * transaction (as ctxt.datasets().addDatasetLock() does) will fail since the 
+                 * dataset doesn't yet exist, and 
+                 * B) a lock isn't needed because no one can be trying to edit it yet (as it
+                 * doesn't exist).
+                 * Thus, we can/need to skip creating the lock. Since the calls to removeLocks
+                 * in FinalizeDatasetPublicationCommand search for and remove existing locks, if
+                 * one doesn't exist, the removal is a no-op in this case.
+             */
+            if (!datasetExternallyReleased) {
+                DatasetLock lock = new DatasetLock(DatasetLock.Reason.finalizePublication, user);
+                lock.setDataset(theDataset);
+                lock.setInfo(info);
+                ctxt.datasets().addDatasetLock(theDataset, lock);
+            }
+            theDataset = ctxt.em().merge(theDataset);
+            // The call to FinalizePublicationCommand has been moved to the new @onSuccess()
+            // method:
+            //ctxt.datasets().callFinalizePublishCommandAsynchronously(theDataset.getId(), ctxt, request, datasetExternallyReleased);
+            return new ArchiveDatasetResult(theDataset, Status.Inprogress);
         }
-        theDataset = ctxt.em().merge(theDataset);
-        // The call to FinalizePublicationCommand has been moved to the new @onSuccess()
-        // method:
-        //ctxt.datasets().callFinalizePublishCommandAsynchronously(theDataset.getId(), ctxt, request, datasetExternallyReleased);
-        return new ArchiveDatasetResult(theDataset, Status.Inprogress);
     }
     
     /**
@@ -198,9 +209,13 @@ public class ArchiveDatasetCommand extends AbstractPublishDatasetCommand<Archive
         }
 
         if (dataset != null) {
+            Optional<Workflow> archPubWf = ctxt.workflows().getDefaultWorkflow(TriggerType.ArchiveDataset);
+            //A pre-publication workflow will call FinalizeDatasetPublicationCommand itself when it completes
+            if (! archPubWf.isPresent() ) {
             logger.fine("From onSuccess, calling FinalizeArchiveCommand for dataset " + dataset.getGlobalId().asString());
             ctxt.datasets().callFinalizeArchiveCommandAsynchronously(dataset.getId(), ctxt, request);
             return true;
+            }
         }
         
         return false;

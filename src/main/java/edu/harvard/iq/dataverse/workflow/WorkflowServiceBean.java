@@ -413,6 +413,22 @@ public class WorkflowServiceBean {
                 ctxt = refresh(ctxt);
                 //Then call Finalize
                 engine.submit(new FinalizeDatasetPublicationCommand(ctxt.getDataset(), ctxt.getRequest(), ctxt.getDatasetExternallyReleased()));
+            } else if(ctxt.getType() == TriggerType.ArchiveDataset) {
+                AuthenticatedUser user = ctxt.getRequest().getAuthenticatedUser();
+                DatasetLock lock = new DatasetLock(DatasetLock.Reason.finalizePublication, user);
+                Dataset dataset = ctxt.getDataset();
+                lock.setDataset(dataset);
+                String info = "Archiving the dataset; "; 
+                lock.setInfo(info);
+                lockDataset(ctxt, lock);
+                ctxt.getDataset().addLock(lock);
+                
+                unlockDataset(ctxt);
+                ctxt.setLockId(null); //the workflow lock
+                //Refreshing merges the dataset
+                ctxt = refresh(ctxt);
+                //Then call Finalize
+                engine.submit(new FinalizeDatasetArchiveCommand(ctxt.getDataset(), ctxt.getRequest()));
             } else {
                 logger.fine("Removing workflow lock");
                 unlockDataset(ctxt);

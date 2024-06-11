@@ -212,9 +212,9 @@ public class ArchiveDatasetCommand extends AbstractPublishDatasetCommand<Archive
             Optional<Workflow> archPubWf = ctxt.workflows().getDefaultWorkflow(TriggerType.ArchiveDataset);
             //A pre-publication workflow will call FinalizeDatasetPublicationCommand itself when it completes
             if (! archPubWf.isPresent() ) {
-            logger.fine("From onSuccess, calling FinalizeArchiveCommand for dataset " + dataset.getGlobalId().asString());
-            ctxt.datasets().callFinalizeArchiveCommandAsynchronously(dataset.getId(), ctxt, request);
-            return true;
+                logger.fine("From onSuccess, calling FinalizeArchiveCommand for dataset " + dataset.getGlobalId().asString());
+                ctxt.datasets().callFinalizeArchiveCommandAsynchronously(dataset.getId(), ctxt, request);
+                return true;
             }
         }
         

@@ -1836,6 +1836,12 @@
                                 </h:outputFormat>
                             </p>
                         </ui:fragment>
+                        <ui:fragment rendered="#{releaseDraft}">
+                            <p:focus for="options"/>
+                            <p class="text-warning">
+                                <span class="glyphicon glyphicon-warning-sign" /> #{bundle['dataset.republish.tip']}
+                            </p>
+                        </ui:fragment>
                         <ui:fragment rendered="#{releaseBoth}">
                             <div class="form-group">
                                 <p class="help-block">

@@ -1809,13 +1809,13 @@
                         <ui:fragment rendered="#{archiveDataset}">
                             <div class="form-group">
                                 <p jsf:rendered="#{valid}" class="col-sm-12 text-warning">#{bundle['dataset.archive.tip']}</p>
-                                <p jsf:rendered="#{!valid}" class="col-sm-12 text-warning"><b style="color:red;">#{bundle['dataset.message.incomplete.warning']}</b></p>
+                                <p jsf:rendered="#{!valid}" class="col-sm-12 text-warning"><b style="color:red;">#{bundle['dataset.message.incomplete.archive.warning']}</b></p>
                             </div>
                         </ui:fragment>
                         <ui:fragment rendered="#{releaseBoth}">
                             <p class="text-warning">
                                 <span class="glyphicon glyphicon-warning-sign"/>
-                                <h:outputFormat value="#{bundle['dataset.mayNotPublish.both']}" escape="false">
+                                <h:outputFormat value="#{bundle['dataset.mayNotArchive.both']}" escape="false">
                                     <o:param>
                                         <a href="/dataverse/#{DatasetPage.dataset.owner.alias}" title="#{DatasetPage.dataset.owner.displayName}">
                                             <h:outputText value="#{DatasetPage.dataset.owner.displayName}"/>
@@ -1827,7 +1827,7 @@
                         <ui:fragment rendered="#{releaseDraft}">
                             <p:focus for="options"/>
                             <p class="text-warning">
-                                <span class="glyphicon glyphicon-warning-sign" /> #{bundle['dataset.republish.tip']}
+                                <span class="glyphicon glyphicon-warning-sign" /> #{bundle['dataset.rearchive.tip']}
                             </p>
                         </ui:fragment>
                         <ui:fragment rendered="#{releaseBoth}">

@@ -430,7 +430,7 @@ public class MailServiceBean implements java.io.Serializable {
                 return messageText += datasetCreatedMessage;
             case SUBMITTEDDS:
                 version =  (DatasetVersion) targetObject;
-                String mightHaveSubmissionComment = "";              
+                String mightHaveSubmissionComment = "";
                 /*
                 FIXME
                 Setting up to add single comment when design completed
@@ -443,6 +443,10 @@ public class MailServiceBean implements java.io.Serializable {
                  requestorName = (requestor.getLastName() != null && requestor.getLastName() != null) ? requestor.getFirstName() + " " + requestor.getLastName() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");
                  requestorEmail = requestor.getEmail() != null ? requestor.getEmail() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");               
                 pattern = BundleUtil.getStringFromBundle("notification.email.wasSubmittedForReview");
+                
+                if (version.getVersionNote().equals("Archived Dataset")) {
+                    pattern = BundleUtil.getStringFromBundle("notification.email.wasSubmittedForReviewArchive");
+                }
 
                 String[] paramArraySubmittedDataset = {version.getDataset().getDisplayName(), getDatasetDraftLink(version.getDataset()), 
                     version.getDataset().getOwner().getDisplayName(),  getDataverseLink(version.getDataset().getOwner()),
@@ -452,6 +456,11 @@ public class MailServiceBean implements java.io.Serializable {
             case PUBLISHEDDS:
                 version =  (DatasetVersion) targetObject;
                 pattern = BundleUtil.getStringFromBundle("notification.email.wasPublished");
+                
+                if (version.getVersionNote().equals("Archived Dataset")) {
+                    pattern = BundleUtil.getStringFromBundle("notification.email.wasArchived");
+                }
+                
                 String[] paramArrayPublishedDataset = {version.getDataset().getDisplayName(), getDatasetLink(version.getDataset()), 
                     version.getDataset().getOwner().getDisplayName(),  getDataverseLink(version.getDataset().getOwner())};
                 messageText += MessageFormat.format(pattern, paramArrayPublishedDataset);

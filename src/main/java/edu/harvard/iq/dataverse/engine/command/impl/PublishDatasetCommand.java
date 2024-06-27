@@ -94,6 +94,12 @@ public class PublishDatasetCommand extends AbstractPublishDatasetCommand<Publish
             theDataset.getLatestVersion().setMinorVersionNumber(new Long(0));
         }
         
+        if (theDataset.getLatestVersion().getVersionNote() != null) {
+            if (theDataset.getLatestVersion().getVersionNote().equals("Archived Dataset")) {
+                theDataset.getLatestVersion().setVersionNote(null);
+            }
+        }
+        
         // Perform any optional validation steps, if defined:
         if (ctxt.systemConfig().isExternalDatasetValidationEnabled()) {
             // For admins, an override of the external validation step may be enabled: 

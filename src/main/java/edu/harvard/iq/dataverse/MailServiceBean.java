@@ -444,8 +444,10 @@ public class MailServiceBean implements java.io.Serializable {
                  requestorEmail = requestor.getEmail() != null ? requestor.getEmail() : BundleUtil.getStringFromBundle("notification.email.info.unavailable");               
                 pattern = BundleUtil.getStringFromBundle("notification.email.wasSubmittedForReview");
                 
-                if (version.getVersionNote().equals("Archived Dataset")) {
-                    pattern = BundleUtil.getStringFromBundle("notification.email.wasSubmittedForReviewArchive");
+                if (version.getVersionNote() != null) {
+                    if (version.getVersionNote().equals("Archived Dataset")) {
+                        pattern = BundleUtil.getStringFromBundle("notification.email.wasSubmittedForReviewArchive");
+                    }
                 }
 
                 String[] paramArraySubmittedDataset = {version.getDataset().getDisplayName(), getDatasetDraftLink(version.getDataset()), 
@@ -457,8 +459,10 @@ public class MailServiceBean implements java.io.Serializable {
                 version =  (DatasetVersion) targetObject;
                 pattern = BundleUtil.getStringFromBundle("notification.email.wasPublished");
                 
-                if (version.getVersionNote().equals("Archived Dataset")) {
-                    pattern = BundleUtil.getStringFromBundle("notification.email.wasArchived");
+                if (version.getVersionNote() != null) {
+                    if (version.getVersionNote().equals("Archived Dataset")) {
+                        pattern = BundleUtil.getStringFromBundle("notification.email.wasArchived");
+                    }
                 }
                 
                 String[] paramArrayPublishedDataset = {version.getDataset().getDisplayName(), getDatasetLink(version.getDataset()), 

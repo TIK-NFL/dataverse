@@ -77,6 +77,8 @@ public class ArchiveDatasetCommand extends AbstractPublishDatasetCommand<Archive
             theDataset.getLatestVersion().setVersionNumber(Long.valueOf(theDataset.getVersionNumber() + 1));
             theDataset.getLatestVersion().setMinorVersionNumber(Long.valueOf(0));
         }
+
+        theDataset.getLatestVersion().setVersionNote("Archived Dataset");
         
         // Perform any optional validation steps, if defined:
         if (ctxt.systemConfig().isExternalDatasetValidationEnabled()) {

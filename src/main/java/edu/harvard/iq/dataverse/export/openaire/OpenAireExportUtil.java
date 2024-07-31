@@ -35,7 +35,7 @@ public class OpenAireExportUtil {
     private static final Logger logger = Logger.getLogger(OpenAireExportUtil.class.getCanonicalName());
 
     public static String XSI_NAMESPACE = "http://www.w3.org/2001/XMLSchema-instance";
-    public static String SCHEMA_VERSION = "4.1";
+    public static String SCHEMA_VERSION = "4.5";
     public static String RESOURCE_NAMESPACE = "http://datacite.org/schema/kernel-4";
     public static String RESOURCE_SCHEMA_LOCATION = "http://schema.datacite.org/meta/kernel-4.5/metadata.xsd";
 

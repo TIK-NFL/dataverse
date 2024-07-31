@@ -97,6 +97,7 @@ public class DatasetFieldConstant implements java.io.Serializable  {
     public final static String topicClassValue="topicClassValue";
     public final static String topicClassVocab="topicClassVocab";
     public final static String topicClassVocabURI="topicClassVocabURI";
+    public final static String topicClassTermURI="topicClassTermURI";
     public final static String descriptionText="dsDescriptionValue";
     public final static String descriptionDate="dsDescriptionDate";
     public final static String timePeriodCovered="timePeriodCovered"; // SEK added 6/13/2016

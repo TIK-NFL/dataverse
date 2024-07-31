@@ -481,6 +481,7 @@ public class OpenAireExportUtil {
                             String subject = null;
                             String subjectScheme = null;
                             String schemeURI = null;
+                            String valueURI = null;
 
                             for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext();) {
                                 FieldDTO next = iterator.next();
@@ -491,15 +492,19 @@ public class OpenAireExportUtil {
                                 if (DatasetFieldConstant.topicClassVocab.equals(next.getTypeName())) {
                                     subjectScheme = next.getSinglePrimitive();
                                 }
-
+                                
                                 if (DatasetFieldConstant.topicClassVocabURI.equals(next.getTypeName())) {
                                     schemeURI = next.getSinglePrimitive();
+                                }
+
+                                if (DatasetFieldConstant.topicClassTermURI.equals(next.getTypeName())) {
+                                    valueURI = next.getSinglePrimitive();
                                 }
                             }
 
                             if (StringUtils.isNotBlank(subject)) {
                                 subject_check = writeOpenTag(xmlw, "subjects", subject_check);
-                                writeSubjectElement(xmlw, subjectScheme, null, schemeURI, subject, language);
+                                writeSubjectElement(xmlw, subjectScheme, valueURI, schemeURI, subject, language);
                             }
                         }
                     }

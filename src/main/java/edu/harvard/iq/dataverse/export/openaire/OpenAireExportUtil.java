@@ -28,6 +28,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
+import org.jsoup.Jsoup;
 
 public class OpenAireExportUtil {
 
@@ -36,7 +37,7 @@ public class OpenAireExportUtil {
     public static String XSI_NAMESPACE = "http://www.w3.org/2001/XMLSchema-instance";
     public static String SCHEMA_VERSION = "4.1";
     public static String RESOURCE_NAMESPACE = "http://datacite.org/schema/kernel-4";
-    public static String RESOURCE_SCHEMA_LOCATION = "http://schema.datacite.org/meta/kernel-4.1/metadata.xsd";
+    public static String RESOURCE_SCHEMA_LOCATION = "http://schema.datacite.org/meta/kernel-4.5/metadata.xsd";
 
     public static String FunderType = "Funder";
 
@@ -1139,6 +1140,8 @@ public class OpenAireExportUtil {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.descriptionText.equals(next.getTypeName())) {
                                     descriptionOfAbstract = next.getSinglePrimitive();
+                                    // From https://stackoverflow.com/questions/240546/remove-html-tags-from-a-string
+                                    descriptionOfAbstract = Jsoup.parse(descriptionOfAbstract).text();
                                 }
                             }
 

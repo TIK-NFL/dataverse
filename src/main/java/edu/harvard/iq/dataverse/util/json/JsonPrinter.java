@@ -644,10 +644,6 @@ public class JsonPrinter {
         List<DatasetFieldType> childLessList = metadataBlock.getDatasetFieldTypes().stream().filter(isNoChild).toList();
         Set<DatasetFieldType> datasetFieldTypesNoChildSorted = new TreeSet<>(childLessList);
         
-        Predicate<DatasetFieldType> isChild = element -> element.isChild() == true;
-        List<DatasetFieldType> childrenList = metadataBlock.getDatasetFieldTypes().stream().filter(isChild).toList();
-        Set<DatasetFieldType> datasetFieldTypesChildrenSorted = new TreeSet<>(childrenList);
-
         for (DatasetFieldType datasetFieldType : datasetFieldTypesNoChildSorted) {
             
             Long datasetFieldTypeId = datasetFieldType.getId();
@@ -667,25 +663,6 @@ public class JsonPrinter {
             }
         }
         
-        for (DatasetFieldType datasetFieldType : datasetFieldTypesChildrenSorted) {
-            
-            Long datasetFieldTypeId = datasetFieldType.getId();
-            boolean requiredAsInputLevelInOwnerDataverse = ownerDataverse != null && ownerDataverse.isDatasetFieldTypeRequiredAsInputLevel(datasetFieldTypeId);
-            boolean includedAsInputLevelInOwnerDataverse = ownerDataverse != null && ownerDataverse.isDatasetFieldTypeIncludedAsInputLevel(datasetFieldTypeId);
-            boolean isNotInputLevelInOwnerDataverse = ownerDataverse != null && !ownerDataverse.isDatasetFieldTypeInInputLevels(datasetFieldTypeId);
-
-            DatasetFieldType parentDatasetFieldType = datasetFieldType.getParentDatasetFieldType();
-            boolean isRequired = parentDatasetFieldType == null ? datasetFieldType.isRequired() : parentDatasetFieldType.isRequired();
-            
-            boolean displayCondition = printOnlyDisplayedOnCreateDatasetFieldTypes
-                    ? (datasetFieldType.isDisplayOnCreate() || isRequired || requiredAsInputLevelInOwnerDataverse)
-                    : ownerDataverse == null || includedAsInputLevelInOwnerDataverse || isNotInputLevelInOwnerDataverse;
-
-            if (displayCondition) {
-                fieldsBuilder.add(datasetFieldType.getName(), json(datasetFieldType, ownerDataverse));
-            }
-        }
-
         jsonObjectBuilder.add("fields", fieldsBuilder);
         return jsonObjectBuilder;
     }

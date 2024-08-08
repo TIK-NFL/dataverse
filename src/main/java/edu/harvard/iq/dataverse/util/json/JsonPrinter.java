@@ -55,7 +55,7 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Singleton;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
-import java.math.BigDecimal;
+import java.util.function.Predicate;
 
 /**
  * Convert objects to Json.
@@ -639,9 +639,17 @@ public class JsonPrinter {
         jsonObjectBuilder.add("displayOnCreate", metadataBlock.isDisplayOnCreate());
 
         JsonObjectBuilder fieldsBuilder = Json.createObjectBuilder();
-        Set<DatasetFieldType> datasetFieldTypes = new TreeSet<>(metadataBlock.getDatasetFieldTypes());
+        
+        Predicate<DatasetFieldType> isNoChild = element -> element.isChild() == false;
+        List<DatasetFieldType> childLessList = metadataBlock.getDatasetFieldTypes().stream().filter(isNoChild).toList();
+        Set<DatasetFieldType> datasetFieldTypesNoChildSorted = new TreeSet<>(childLessList);
+        
+        Predicate<DatasetFieldType> isChild = element -> element.isChild() == true;
+        List<DatasetFieldType> childrenList = metadataBlock.getDatasetFieldTypes().stream().filter(isChild).toList();
+        Set<DatasetFieldType> datasetFieldTypesChildrenSorted = new TreeSet<>(childrenList);
 
-        for (DatasetFieldType datasetFieldType : datasetFieldTypes) {
+        for (DatasetFieldType datasetFieldType : datasetFieldTypesNoChildSorted) {
+            
             Long datasetFieldTypeId = datasetFieldType.getId();
             boolean requiredAsInputLevelInOwnerDataverse = ownerDataverse != null && ownerDataverse.isDatasetFieldTypeRequiredAsInputLevel(datasetFieldTypeId);
             boolean includedAsInputLevelInOwnerDataverse = ownerDataverse != null && ownerDataverse.isDatasetFieldTypeIncludedAsInputLevel(datasetFieldTypeId);
@@ -650,6 +658,25 @@ public class JsonPrinter {
             DatasetFieldType parentDatasetFieldType = datasetFieldType.getParentDatasetFieldType();
             boolean isRequired = parentDatasetFieldType == null ? datasetFieldType.isRequired() : parentDatasetFieldType.isRequired();
 
+            boolean displayCondition = printOnlyDisplayedOnCreateDatasetFieldTypes
+                    ? (datasetFieldType.isDisplayOnCreate() || isRequired || requiredAsInputLevelInOwnerDataverse)
+                    : ownerDataverse == null || includedAsInputLevelInOwnerDataverse || isNotInputLevelInOwnerDataverse;
+
+            if (displayCondition) {
+                fieldsBuilder.add(datasetFieldType.getName(), json(datasetFieldType, ownerDataverse));
+            }
+        }
+        
+        for (DatasetFieldType datasetFieldType : datasetFieldTypesChildrenSorted) {
+            
+            Long datasetFieldTypeId = datasetFieldType.getId();
+            boolean requiredAsInputLevelInOwnerDataverse = ownerDataverse != null && ownerDataverse.isDatasetFieldTypeRequiredAsInputLevel(datasetFieldTypeId);
+            boolean includedAsInputLevelInOwnerDataverse = ownerDataverse != null && ownerDataverse.isDatasetFieldTypeIncludedAsInputLevel(datasetFieldTypeId);
+            boolean isNotInputLevelInOwnerDataverse = ownerDataverse != null && !ownerDataverse.isDatasetFieldTypeInInputLevels(datasetFieldTypeId);
+
+            DatasetFieldType parentDatasetFieldType = datasetFieldType.getParentDatasetFieldType();
+            boolean isRequired = parentDatasetFieldType == null ? datasetFieldType.isRequired() : parentDatasetFieldType.isRequired();
+            
             boolean displayCondition = printOnlyDisplayedOnCreateDatasetFieldTypes
                     ? (datasetFieldType.isDisplayOnCreate() || isRequired || requiredAsInputLevelInOwnerDataverse)
                     : ownerDataverse == null || includedAsInputLevelInOwnerDataverse || isNotInputLevelInOwnerDataverse;

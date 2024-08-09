@@ -28,15 +28,16 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
+import org.jsoup.Jsoup;
 
 public class OpenAireExportUtil {
 
     private static final Logger logger = Logger.getLogger(OpenAireExportUtil.class.getCanonicalName());
 
     public static String XSI_NAMESPACE = "http://www.w3.org/2001/XMLSchema-instance";
-    public static String SCHEMA_VERSION = "4.1";
+    public static String SCHEMA_VERSION = "4.5";
     public static String RESOURCE_NAMESPACE = "http://datacite.org/schema/kernel-4";
-    public static String RESOURCE_SCHEMA_LOCATION = "http://schema.datacite.org/meta/kernel-4.1/metadata.xsd";
+    public static String RESOURCE_SCHEMA_LOCATION = "http://schema.datacite.org/meta/kernel-4.5/metadata.xsd";
 
     public static String FunderType = "Funder";
 
@@ -480,6 +481,7 @@ public class OpenAireExportUtil {
                             String subject = null;
                             String subjectScheme = null;
                             String schemeURI = null;
+                            String valueURI = null;
 
                             for (Iterator<FieldDTO> iterator = fieldDTOs.iterator(); iterator.hasNext();) {
                                 FieldDTO next = iterator.next();
@@ -490,15 +492,19 @@ public class OpenAireExportUtil {
                                 if (DatasetFieldConstant.topicClassVocab.equals(next.getTypeName())) {
                                     subjectScheme = next.getSinglePrimitive();
                                 }
-
+                                
                                 if (DatasetFieldConstant.topicClassVocabURI.equals(next.getTypeName())) {
                                     schemeURI = next.getSinglePrimitive();
+                                }
+
+                                if (DatasetFieldConstant.topicClassTermURI.equals(next.getTypeName())) {
+                                    valueURI = next.getSinglePrimitive();
                                 }
                             }
 
                             if (StringUtils.isNotBlank(subject)) {
                                 subject_check = writeOpenTag(xmlw, "subjects", subject_check);
-                                writeSubjectElement(xmlw, subjectScheme, null, schemeURI, subject, language);
+                                writeSubjectElement(xmlw, subjectScheme, valueURI, schemeURI, subject, language);
                             }
                         }
                     }
@@ -1139,6 +1145,8 @@ public class OpenAireExportUtil {
                                 FieldDTO next = iterator.next();
                                 if (DatasetFieldConstant.descriptionText.equals(next.getTypeName())) {
                                     descriptionOfAbstract = next.getSinglePrimitive();
+                                    // From https://stackoverflow.com/questions/240546/remove-html-tags-from-a-string
+                                    descriptionOfAbstract = Jsoup.parse(descriptionOfAbstract).text();
                                 }
                             }
 

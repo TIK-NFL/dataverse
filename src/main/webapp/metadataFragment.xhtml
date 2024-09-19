@@ -457,7 +457,10 @@
         }
       }
       const project_url = "https://fis-qs.campus.uni-stuttgart.de/converis/portal/detail/Project/";
-      const number = document.getElementById("metadata_project").childElementCount;
+      var number = 0;
+      if(document.getElementById("metadata_project").hasChildNodes()){
+        number = document.getElementById("metadata_project").childElementCount;
+      }
       const pattern = /[0-9]{2,}\b/gm;
       if(number == 2) {
         var project_metadata = document.getElementById("metadata_project");

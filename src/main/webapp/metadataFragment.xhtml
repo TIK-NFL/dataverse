@@ -456,6 +456,27 @@
           $('#panelCollapse'+i).collapse('hide');
         }
       }
+      const project_url = "https://fis-qs.campus.uni-stuttgart.de/converis/portal/detail/Project/";
+      const number = document.getElementById("metadata_project").childElementCount;
+      if(number == 2) {
+        var project_metadata = document.getElementById("metadata_project");
+        var row = project_metadata.getElementsByTagName("td").innerHTML;
+        var project = row.getElementsByTagName("span").innerHTML;
+        var fisid = row.search(/[0-9]{2,}\b/gm);
+        var projectHtml = "";
+        projectHtml.append('<a href="' + project_url + fisid + '">' +project+ '</a>')
+        row.getElementsByTagName("span").innerHTML(projectHtml);
+      } else if (number > 2) {
+          for (let i = 0; i < number; i++) {
+            var project_metadata = document.getElementById("metadata_project");
+            var row = project_metadata.getElementsByTagName("td")[i].innerHTML;
+            var project = row.getElementsByTagName("span").innerHTML;
+            var fisid = row.search(/[0-9]{2,}\b/gm);
+            var projectHtml = "";
+            projectHtml.append('<a href="' + project_url + fisid + '">' +project+ '</a>')
+            row.getElementsByTagName("span").innerHTML(projectHtml);
+          }
+      }
     });
     //]]>
     </script>

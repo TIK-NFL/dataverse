@@ -456,6 +456,48 @@
           $('#panelCollapse'+i).collapse('hide');
         }
       }
+      const project_url = "https://fis-qs.campus.uni-stuttgart.de/converis/portal/detail/Project/";
+      var number = 0;
+      var project_metadata
+      if(document.getElementById("metadata_project") != null) {
+        project_metadata = document.getElementById("metadata_project");
+        number = document.getElementById("metadata_project").childElementCount;
+        if(number == 2) {
+            if(project_metadata.getElementsByTagName("td") != null) {
+                if(project_metadata.getElementsByTagName("span") == null) {
+                    number = 0;
+                }
+            }
+        } else if (number > 2) {
+            if(project_metadata.getElementsByTagName("td")[0] != null) {
+                if(project_metadata.getElementsByTagName("span") == null) {
+                    number = 0;
+                }
+            }
+        }
+      }
+      const pattern = /[0-9]{2,}\b/gm;
+      if(number == 2) {
+        var row = project_metadata.getElementsByTagName("td");
+        var project = project_metadata.getElementsByTagName("span");
+        if(pattern.test(row)) {
+            var fisid = row.search(pattern);
+            var projectHtml = "";
+            projectHtml.append('<a href="' + project_url + fisid + '">' +project+ '</a>')
+            project_metadata.getElementsByTagName("span") = projectHtml;
+        }
+      } else if (number > 2) {
+          for (let i = 0; i < number; i++) {
+            var row = project_metadata.getElementsByTagName("td")[i];
+            var project = project_metadata.getElementsByTagName("span");
+            if(pattern.test(row)) {
+                var fisid = row.search(pattern);
+                var projectHtml = "";
+                projectHtml.append('<a href="' + project_url + fisid + '">' +project+ '</a>')
+                project_metadata.getElementsByTagName("span") = projectHtml;
+            }
+          }
+      }
     });
     //]]>
     </script>

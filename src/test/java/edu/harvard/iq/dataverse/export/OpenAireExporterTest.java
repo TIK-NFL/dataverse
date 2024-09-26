@@ -185,7 +185,7 @@ public class OpenAireExporterTest {
     public void testGetXMLSchemaLocation() throws Exception {
         System.out.println("getXMLSchemaLocation");
         OpenAireExporter instance = new OpenAireExporter();
-        String expResult = "http://schema.datacite.org/meta/kernel-4.1/metadata.xsd";
+        String expResult = "http://schema.datacite.org/meta/kernel-4.5/metadata.xsd";
         String result = instance.getXMLSchemaLocation();
         assertEquals(expResult, result);
     }
@@ -197,7 +197,7 @@ public class OpenAireExporterTest {
     public void testGetXMLSchemaVersion() throws Exception {
         System.out.println("getXMLSchemaVersion");
         OpenAireExporter instance = new OpenAireExporter();
-        String expResult = "4.1";
+        String expResult = "4.5";
         String result = instance.getXMLSchemaVersion();
         assertEquals(expResult, result);
     }

@@ -489,8 +489,8 @@
         var row = project_metadata.getElementsByTagName("td")[i];
         var project = row.getElementsByTagName("span")[0].innerText;
         if(pattern.test(row.innerText)) {
-            var fisid = row.innerText.search(pattern);
-            row.getElementsByTagName("span")[0].innerHTML = '<a href="' + project_url + fisid + '">' +project+ '</a>';
+            var fisid = row.innerText.match(pattern)[0];
+            row.getElementsByTagName("span")[0].innerHTML = '<a href="' + project_url + fisid + '" target="_blank">' +project+ '</a>';
         }
       }
     });

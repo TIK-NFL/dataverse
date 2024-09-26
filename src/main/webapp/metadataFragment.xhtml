@@ -456,42 +456,29 @@
           $('#panelCollapse'+i).collapse('hide');
         }
       }
-      const project_url = "https://fis-qs.campus.uni-stuttgart.de/converis/portal/detail/Project/";
+      const project_url = "https://fis.uni-stuttgart.de/converis/portal/detail/Project/";
       var number = 0;
       var project_metadata = "";
       if(document.getElementById("metadata_project") !== null) {
         project_metadata = document.getElementById("metadata_project");
         number = document.getElementById("metadata_project").childElementCount;
-        if(number === 2) {
+        if(number >= 2) {
             if(project_metadata.getElementsByTagName("td") !== null) {
-                if(project_metadata.getElementsByTagName("span") === null) {
-                    number = 0;
+                if(project_metadata.getElementsByTagName("span") !== null) {
+                    const pattern = /[0-9]{6,}\b/gm;
+                    var counter = number -1;
+                    var row = project_metadata.getElementsByTagName("td")[0];
+                    var fisid = [];
+                    if(pattern.test(row.innerText)) {
+                      fisid = row.innerText.match(pattern);
+                      for (let i = 0; i < counter; i++) {
+                          var project = row.getElementsByTagName("span")[i].innerText;
+                          row.getElementsByTagName("span")[i].innerHTML = '<a href="' + project_url + fisid[i] + '" target="_blank">' +project+ '</a>';
+                      }
+                    }
                 }
             }
-        } else if (number > 2) {
-            if(project_metadata.getElementsByTagName("td")[0] !== null) {
-                if(project_metadata.getElementsByTagName("span") === null) {
-                    number = 0;
-                }
-            }
-        }
-      }
-      const pattern = /[0-9]{2,}\b$/gm;
-      var counter = 0;
-      if(number === 2) {
-          counter = 1;
-      } else if(number > 2) {
-          counter = number -1;
-      } else {
-          counter = 0;
-      }
-      for (let i = 0; i < counter; i++) {
-        var row = project_metadata.getElementsByTagName("td")[i];
-        var project = row.getElementsByTagName("span")[0].innerText;
-        if(pattern.test(row.innerText)) {
-            var fisid = row.innerText.match(pattern)[0];
-            row.getElementsByTagName("span")[0].innerHTML = '<a href="' + project_url + fisid + '" target="_blank">' +project+ '</a>';
-        }
+        } 
       }
     });
     //]]>

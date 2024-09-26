@@ -482,8 +482,7 @@
         var project = row.getElementsByTagName("span")[0].innerText;
         if(pattern.test(row.innerText)) {
             var fisid = row.innerText.search(pattern);
-            var projectHtml = "";
-            projectHtml.append('<a href="' + project_url + fisid + '">' +project+ '</a>')
+            var projectHtml = '<a href="' + project_url + fisid + '">' +project+ '</a>';
             project_metadata.getElementsByTagName("span").innerHTML = projectHtml;
         }
       } else if (number > 2) {
@@ -492,8 +491,7 @@
             var project = row.getElementsByTagName("span")[0].innerText;
             if(pattern.test(row.innerText)) {
                 var fisid = row.innerText.search(pattern);
-                var projectHtml = "";
-                projectHtml.append('<a href="' + project_url + fisid + '">' +project+ '</a>')
+                var projectHtml = '<a href="' + project_url + fisid + '">' +project+ '</a>';
                 project_metadata.getElementsByTagName("span").innerHTML = projectHtml;
             }
           }

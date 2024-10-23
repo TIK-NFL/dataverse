@@ -459,15 +459,17 @@ public class MailServiceBean implements java.io.Serializable {
                 version =  (DatasetVersion) targetObject;
                 pattern = BundleUtil.getStringFromBundle("notification.email.wasPublished");
                 
-                if (version.getVersionNote() != null) {
-                    if (version.getVersionNote().equals("Archived Dataset")) {
-                        pattern = BundleUtil.getStringFromBundle("notification.email.wasArchived");
-                    }
-                }
-                
                 String[] paramArrayPublishedDataset = {version.getDataset().getDisplayName(), getDatasetLink(version.getDataset()), 
                     version.getDataset().getOwner().getDisplayName(),  getDataverseLink(version.getDataset().getOwner())};
                 messageText += MessageFormat.format(pattern, paramArrayPublishedDataset);
+                return messageText;
+            case ARCHIVEDDS:
+                version =  (DatasetVersion) targetObject;
+                pattern = BundleUtil.getStringFromBundle("notification.email.wasArchived");
+                
+                String[] paramArrayArchivedDataset = {version.getDataset().getDisplayName(), getDatasetLink(version.getDataset()), 
+                    version.getDataset().getOwner().getDisplayName(),  getDataverseLink(version.getDataset().getOwner())};
+                messageText += MessageFormat.format(pattern, paramArrayArchivedDataset);
                 return messageText;
             case PUBLISHFAILED_PIDREG:
                 version =  (DatasetVersion) targetObject;

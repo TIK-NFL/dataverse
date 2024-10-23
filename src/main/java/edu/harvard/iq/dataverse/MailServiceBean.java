@@ -788,6 +788,7 @@ public class MailServiceBean implements java.io.Serializable {
             case CREATEDS:
             case SUBMITTEDDS:
             case PUBLISHEDDS:
+            case ARCHIVEDDS:
             case PUBLISHFAILED_PIDREG:
             case RETURNEDDS:
             case WORKFLOW_SUCCESS:

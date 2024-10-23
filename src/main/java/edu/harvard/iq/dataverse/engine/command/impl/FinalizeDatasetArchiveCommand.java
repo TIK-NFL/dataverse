@@ -217,7 +217,7 @@ public class FinalizeDatasetArchiveCommand extends AbstractPublishDatasetCommand
         
         try {
             // Success! - send notification:
-            notifyUsersDatasetPublishStatus(ctxt, dataset, UserNotification.Type.PUBLISHEDDS);
+            notifyUsersDatasetPublishStatus(ctxt, dataset, UserNotification.Type.ARCHIVEDDS);
         } catch (Exception e) {
             logger.warning("Failure to send dataset published messages for : " + dataset.getId() + " : " + e.getMessage());
         }

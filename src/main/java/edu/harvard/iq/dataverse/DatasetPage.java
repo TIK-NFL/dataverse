@@ -120,6 +120,7 @@ import edu.harvard.iq.dataverse.engine.command.impl.AbstractSubmitToArchiveComma
 import edu.harvard.iq.dataverse.engine.command.impl.ArchiveDatasetCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.ArchiveDatasetResult;
 import edu.harvard.iq.dataverse.engine.command.impl.CreateNewDatasetCommand;
+import edu.harvard.iq.dataverse.engine.command.impl.DeleteDatasetLinkingDataverseCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.GetLatestPublishedDatasetVersionCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.RequestRsyncScriptCommand;
 import edu.harvard.iq.dataverse.engine.command.impl.PublishDatasetResult;
@@ -3611,6 +3612,16 @@ public class DatasetPage implements java.io.Serializable {
         }
         alreadyLinkedDataverses = null; //force update to list of linked dataverses
     }
+    public void deleteLinkingDataverses(ActionEvent evt) {
+
+        if (deleteLink(selectedDataverseForLinking)) {
+            JsfHelper.addSuccessMessage(BundleUtil.getStringFromBundle("dataset.message.unlinkSuccess", getSuccessMessageArguments()));
+        } else {
+            FacesMessage message = new FacesMessage(FacesMessage.SEVERITY_INFO, BundleUtil.getStringFromBundle("dataset.notlinked"), linkingDataverseErrorMessage);
+            FacesContext.getCurrentInstance().addMessage(null, message);
+        }
+        alreadyLinkedDataverses = null; //force update to list of linked dataverses
+    }
 
     private String linkingDataverseErrorMessage = "";
 
@@ -3645,6 +3656,25 @@ public class DatasetPage implements java.io.Serializable {
         }
         return retVal;
     }
+    private Boolean deleteLink(Dataverse dataverse){
+        boolean retVal = true;
+        linkingDataverse = dataverse;
+        try {
+            DatasetLinkingDataverse dsld = dsLinkingService.findDatasetLinkingDataverse(dataset.getId(), linkingDataverse.getId());
+            DeleteDatasetLinkingDataverseCommand cmd = new DeleteDatasetLinkingDataverseCommand(dvRequestService.getDataverseRequest(), dataset, dsld, true);
+            commandEngine.submit(cmd);
+        } catch (CommandException ex) {
+            String msg = "There was a problem removing the link between this dataset to yours: " + ex;
+            logger.severe(msg);
+            msg = BundleUtil.getStringFromBundle("dataset.notlinked.msg") + ex;
+            /**
+             * @todo how do we get this message to show up in the GUI?
+             */
+            linkingDataverseErrorMessage = msg;
+            retVal = false;
+        }
+        return retVal;
+    }
         
     private String alreadyLinkedDataverses = null;
     
@@ -3667,6 +3697,14 @@ public class DatasetPage implements java.io.Serializable {
         dataset = datasetService.find(dataset.getId());
         if (session.getUser().isAuthenticated()) {
             return dataverseService.filterDataversesForLinking(query, dvRequestService.getDataverseRequest(), dataset);
+        } else {
+            return null;
+        }
+    }
+    public List<Dataverse> completeUnLinkingDataverse(String query) {
+        dataset = datasetService.find(dataset.getId());
+        if (session.getUser().isAuthenticated()) {
+            return dataverseService.filterDataversesForUnLinking(query, dvRequestService.getDataverseRequest(), dataset);
         } else {
             return null;
         }
@@ -5659,12 +5697,19 @@ public class DatasetPage implements java.io.Serializable {
     public boolean isShowLinkingPopup() {
         return showLinkingPopup;
     }
+    public boolean isShowUnLinkingPopup() {
+        return showUnLinkingPopup;
+    }
 
     public void setShowLinkingPopup(boolean showLinkingPopup) {
         this.showLinkingPopup = showLinkingPopup;
     }
+    public void setShowUnLinkingPopup(boolean showUnLinkingPopup) {
+        this.showUnLinkingPopup = showUnLinkingPopup;
+    }
 
     private boolean showLinkingPopup = false;
+    private boolean showUnLinkingPopup = false;
     private Boolean anonymizedAccess = null;
 
     //

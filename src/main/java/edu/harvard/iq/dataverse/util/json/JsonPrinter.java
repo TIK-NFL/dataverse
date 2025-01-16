@@ -56,6 +56,7 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Singleton;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
+import java.util.function.Predicate;
 
 /**
  * Convert objects to Json.
@@ -276,7 +277,9 @@ public class JsonPrinter {
         }
         bld.add("permissionRoot", dv.isPermissionRoot())
                 .add("description", dv.getDescription())
-                .add("dataverseType", dv.getDataverseType().name());
+                .add("dataverseType", dv.getDataverseType().name())
+                .add("isMetadataBlockRoot", dv.isMetadataBlockRoot())
+                .add("isFacetRoot", dv.isFacetRoot());
         if (dv.getOwner() != null) {
             bld.add("ownerId", dv.getOwner().getId());
         }
@@ -340,6 +343,7 @@ public class JsonPrinter {
             ownerObject.add("type", "DATAVERSE");
             Dataverse in = (Dataverse) dvo;
             ownerObject.add("identifier", in.getAlias());
+            ownerObject.add("isReleased", in.isReleased());
         }
 
         if (dvo.isInstanceofDataset()) {
@@ -651,10 +655,30 @@ public class JsonPrinter {
         }
 
         JsonObjectBuilder fieldsBuilder = Json.createObjectBuilder();
-        for (DatasetFieldType datasetFieldType : datasetFieldTypes) {
-            fieldsBuilder.add(datasetFieldType.getName(), json(datasetFieldType, ownerDataverse));
-        }
+        
+        Predicate<DatasetFieldType> isNoChild = element -> element.isChild() == false;
+        List<DatasetFieldType> childLessList = metadataBlock.getDatasetFieldTypes().stream().filter(isNoChild).toList();
+        Set<DatasetFieldType> datasetFieldTypesNoChildSorted = new TreeSet<>(childLessList);
+        
+        for (DatasetFieldType datasetFieldType : datasetFieldTypesNoChildSorted) {
+            
+            Long datasetFieldTypeId = datasetFieldType.getId();
+            boolean requiredAsInputLevelInOwnerDataverse = ownerDataverse != null && ownerDataverse.isDatasetFieldTypeRequiredAsInputLevel(datasetFieldTypeId);
+            boolean includedAsInputLevelInOwnerDataverse = ownerDataverse != null && ownerDataverse.isDatasetFieldTypeIncludedAsInputLevel(datasetFieldTypeId);
+            boolean isNotInputLevelInOwnerDataverse = ownerDataverse != null && !ownerDataverse.isDatasetFieldTypeInInputLevels(datasetFieldTypeId);
 
+            DatasetFieldType parentDatasetFieldType = datasetFieldType.getParentDatasetFieldType();
+            boolean isRequired = parentDatasetFieldType == null ? datasetFieldType.isRequired() : parentDatasetFieldType.isRequired();
+
+            boolean displayCondition = printOnlyDisplayedOnCreateDatasetFieldTypes
+                    ? (datasetFieldType.isDisplayOnCreate() || isRequired || requiredAsInputLevelInOwnerDataverse)
+                    : ownerDataverse == null || includedAsInputLevelInOwnerDataverse || isNotInputLevelInOwnerDataverse;
+
+            if (displayCondition) {
+                fieldsBuilder.add(datasetFieldType.getName(), json(datasetFieldType, ownerDataverse));
+            }
+        }
+        
         jsonObjectBuilder.add("fields", fieldsBuilder);
         return jsonObjectBuilder;
     }
@@ -1010,6 +1034,7 @@ public class JsonPrinter {
                 add("status", harvestingClient.isHarvestingNow() ? "inProgress" : "inActive").
                 add("customHeaders", harvestingClient.getCustomHttpHeaders()).
                 add("allowHarvestingMissingCVV", harvestingClient.getAllowHarvestingMissingCVV()).
+                add("useOaiIdentifiersAsPids", harvestingClient.isUseOaiIdentifiersAsPids()).
                 add("lastHarvest", harvestingClient.getLastHarvestTime() == null ? null : harvestingClient.getLastHarvestTime().toString()).
                 add("lastResult", harvestingClient.getLastResult()).
                 add("lastSuccessful", harvestingClient.getLastSuccessfulHarvestTime() == null ? null : harvestingClient.getLastSuccessfulHarvestTime().toString()).

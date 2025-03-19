@@ -41,11 +41,11 @@ public class MarkupChecker {
 
         // Create a base Safelist configuration
         Safelist sl = Safelist.basicWithImages()
-                .addTags("h1", "h2", "h3", "kbd", "hr", "s", "del", "map", "area", "ol")
+                .addTags("h1", "h2", "h3", "kbd", "hr", "s", "del", "map", "area")
                 .addAttributes("img", "usemap", "style")
+                .addAttributes("ol", "type")
                 .addAttributes("map", "name")
                 .addAttributes("area", "shape", "coords", "href", "title", "alt")
-                .addAttributes(tag:"ol", "type")
                 .addEnforcedAttribute("a", "target", "_blank");
 
         // Add class attributes if requested

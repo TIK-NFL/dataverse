@@ -57,7 +57,6 @@ import jakarta.ejb.EJB;
 import jakarta.ejb.Singleton;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
-import java.util.function.Predicate;
 
 /**
  * Convert objects to Json.

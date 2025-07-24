@@ -59,6 +59,8 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import jakarta.validation.constraints.Size;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -2159,6 +2161,9 @@ public class DatasetVersion implements Serializable {
     
     // Add methods to manage curationLabels
     public List<CurationStatus> getCurationStatuses() {
+        Predicate<CurationStatus> isDateNull = curationStatus -> curationStatus.getCreateTime() == null;
+        Consumer<CurationStatus> setDateNow = curationStatus -> curationStatus.setCreateTime(new Date());
+        curationStatuses.stream().filter(isDateNull).forEach(curationStatus -> setDateNow.accept(curationStatus));
         return curationStatuses;
     }
 

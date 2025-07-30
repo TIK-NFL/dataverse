@@ -88,6 +88,8 @@ public class CreateNewDataFilesCommand extends AbstractCommand<CreateDataFileRes
 
     private static final String OVERWRITE_MIME_TYPE_PREFIX = "force-";
 
+    private static final String OVERWRITE_MIME_TYPE_PREFIX = "force-";
+
     public CreateNewDataFilesCommand(DataverseRequest aRequest, DatasetVersion version, InputStream inputStream, String fileName, String suppliedContentType, String newStorageIdentifier, UploadSessionQuotaLimit quota, String newCheckSum) {
         this(aRequest, version, inputStream, fileName, suppliedContentType, newStorageIdentifier, quota, newCheckSum, null);
     }

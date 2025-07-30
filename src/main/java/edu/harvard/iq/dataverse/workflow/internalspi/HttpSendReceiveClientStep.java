@@ -49,6 +49,7 @@ public class HttpSendReceiveClientStep implements WorkflowStep {
                 }
             });
         } catch (Exception ex) {
+            this.rollback(context, null);
             logger.log(Level.SEVERE, "Error communicating with remote server: " + ex.getMessage(), ex);
             return new Failure("Error executing request: " + ex.getLocalizedMessage(), "Cannot communicate with remote server.");
         }

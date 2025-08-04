@@ -21,8 +21,6 @@ import java.util.logging.Logger;
  */
 @FacesConverter("dataverseConverter")
 public class DataverseConverter implements Converter {
-    private static final Logger logger = Logger.getLogger(DatasetPage.class.getCanonicalName());
-
     
     //@EJB
     DataverseServiceBean dataverseService = CDI.current().select(DataverseServiceBean.class).get();

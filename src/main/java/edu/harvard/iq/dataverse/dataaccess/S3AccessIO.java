@@ -104,6 +104,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
     static final String PATH_STYLE_ACCESS = "path-style-access";
     static final String CHUNKED_ENCODING = "chunked-encoding";
     static final String PROFILE = "profile";
+    static final String API_CALL_TIMEOUT = "api-call-timeout";
+    static final String API_CALL_ATTEMPT_TIMEOUT = "api-call-attempt-timeout";
 
     private boolean mainDriver = true;
     boolean s3pathStyleAccess = false;
@@ -122,6 +124,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             minPartSize = getMinPartSize(driverId);
             credentialsProvider = getCredentialsProvider(driverId);
             s3 = getClient(driverId);
+            s3.serviceClientConfiguration().overrideConfiguration().toBuilder().apiCallTimeout(Duration.ofSeconds(Long.parseLong(getConfigParam(API_CALL_TIMEOUT,"2"))))
+                .apiCallAttemptTimeout(Duration.ofSeconds(Long.parseLong(getConfigParam(API_CALL_ATTEMPT_TIMEOUT,"2"))));
             tm = getTransferManager(driverId);
             s3Presigner = getPresigner(driverId);
             endpoint = getConfigParam(CUSTOM_ENDPOINT_URL, "");

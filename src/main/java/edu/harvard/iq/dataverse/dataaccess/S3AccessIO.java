@@ -126,6 +126,8 @@ public class S3AccessIO<T extends DvObject> extends StorageIO<T> {
             s3 = getClient(driverId);
             s3.serviceClientConfiguration().overrideConfiguration().toBuilder().apiCallTimeout(Duration.ofSeconds(Long.parseLong(getConfigParam(API_CALL_TIMEOUT,"6"))))
                 .apiCallAttemptTimeout(Duration.ofMillis(Long.parseLong(getConfigParam(API_CALL_ATTEMPT_TIMEOUT,"2000"))));
+            logger.info("API Call Timeout has been set to : " + getConfigParam(API_CALL_TIMEOUT,"6"));
+            logger.info("API Call Attempt Timeout has been set to : " + getConfigParam(API_CALL_ATTEMPT_TIMEOUT,"2000"));
             tm = getTransferManager(driverId);
             s3Presigner = getPresigner(driverId);
             endpoint = getConfigParam(CUSTOM_ENDPOINT_URL, "");

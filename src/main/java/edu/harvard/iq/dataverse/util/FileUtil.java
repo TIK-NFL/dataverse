@@ -54,6 +54,7 @@ import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatLink;
 import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatTableCellAlignRight;
 import static edu.harvard.iq.dataverse.util.xml.html.HtmlFormatUtil.formatTableRow;
 
+import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -82,7 +83,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -92,6 +93,7 @@ import jakarta.enterprise.inject.spi.CDI;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
 
+import javax.imageio.ImageIO;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -109,6 +111,8 @@ import java.util.Arrays;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.Tika;
+import org.primefaces.model.file.UploadedFile;
+
 import ucar.nc2.NetcdfFile;
 import ucar.nc2.NetcdfFiles;
 
@@ -1899,6 +1903,64 @@ public class FileUtil implements java.io.Serializable  {
             return null;
         }
         return new String(originalFileName.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
+    }
+    
+    /**
+     * Verifies that an uploaded file is a valid png or jpg image file. Performs both MIME type checking and content validation.
+     * 
+     * Note: This is similar to the isFileOfImageType which is used for collection feature items. This method works with PrimeFaces UploadedFile vs File, limits to jpg and png (as the UI states), uses
+     * ImageIO to read the content, and checks size (as the caller of isFileOfImageType does). It avoids using Tika in the core (as we once tried to do) and is potentially slower but more thorough as it
+     * will confirm the image is not corrupt. Work could be done to merge the two use cases.
+     * 
+     * @param uploadedFile
+     *            the file to verify
+     * @param maxSize
+     *            maximum allowed file size in bytes
+     */
+    public static boolean isUploadedFileAnImage(UploadedFile uploadedFile, long maxSize) {
+        if (uploadedFile == null) {
+           return false;
+        }
+
+        // Pre-filter: Check MIME type first (fast rejection)
+        String contentType = uploadedFile.getContentType();
+        if (contentType == null || !contentType.startsWith("image/")) {
+            return false;
+        }
+
+        // Check against allowed MIME types
+        Set<String> allowedMimeTypes = Set.of(
+                "image/jpeg",
+                "image/jpg",
+                "image/png");
+
+        if (!allowedMimeTypes.contains(contentType.toLowerCase())) {
+            return false;
+            }
+
+        // Validate actual image content (security check)
+        try (InputStream inputStream = uploadedFile.getInputStream()) {
+            BufferedImage image = ImageIO.read(inputStream);
+            if (image == null) {
+                return false;
+                }
+
+            // Optional: Check file size limit (similar to DataverseFeaturedItemServiceBean)
+
+            if (uploadedFile.getSize() > maxSize) {
+                return false;
+            }
+
+            // Optional: Check image dimensions if needed
+            int width = image.getWidth();
+            int height = image.getHeight();
+            logger.fine("Uploaded image dimensions: " + width + "x" + height);
+
+        } catch (IOException e) {
+            logger.log(Level.WARNING, "Error reading uploaded image file", e);
+            return false;
+        }
+        return true;
     }
 
 }

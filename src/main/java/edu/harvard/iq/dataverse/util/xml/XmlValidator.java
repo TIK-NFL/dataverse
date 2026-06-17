@@ -41,6 +41,13 @@ public class XmlValidator {
         } catch (SAXException e) {
             logger.warning("Could not set XML security features: " + e.getMessage());
         }
+        try {
+            // FEATURE_SECURE_PROCESSING restricts accessExternalSchema to "" by default,
+            // but loading remote schemas (e.g. DataCite XSD importing xml.xsd) requires https.
+            schemaFactory.setProperty(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "https");
+        } catch (SAXException e) {
+            logger.warning("Could not set accessExternalSchema property: " + e.getMessage());
+        }
         
         Schema schema = schemaFactory.newSchema(schemaToValidateAgainst);
         Validator validator = schema.newValidator();

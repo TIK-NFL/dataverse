@@ -197,6 +197,7 @@ public class DatasetVersion implements Serializable {
     @OrderBy("createTime DESC NULLS LAST")
     private List<CurationStatus> curationStatuses = new ArrayList<>();
 
+    @Transient
     private Map<CurationStatus, Date> keyCache = curationStatuses.stream()
             .collect(Collectors.toMap(
                     cs -> cs,

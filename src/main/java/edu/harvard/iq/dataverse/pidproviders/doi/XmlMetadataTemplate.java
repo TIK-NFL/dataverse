@@ -388,7 +388,7 @@ public class XmlMetadataTemplate {
             String topic = null;
             String scheme = null;
             String schemeUri = null;
-            String termUri = null;
+            String valueURI = null;
 
             for (DatasetField subField : topicFieldValue.getChildDatasetFields()) {
 
@@ -403,7 +403,7 @@ public class XmlMetadataTemplate {
                     schemeUri = subField.getValue();
                     break;
                 case DatasetFieldConstant.topicClassTermURI:
-                    termUri = subField.getValue();
+                    valueURI = subField.getValue();
                     break;
                 }
             }
@@ -415,8 +415,8 @@ public class XmlMetadataTemplate {
                 if (StringUtils.isNotBlank(schemeUri)) {
                     attributesMap.put("schemeURI", schemeUri);
                 }
-                if (StringUtils.isNotBlank(termUri)) {
-                    attributesMap.put("valueURI", termUri);
+                if (StringUtils.isNotBlank(valueURI)) {
+                    attributesMap.put("valueURI", valueURI);
                 }
                 subjectsCreated = XmlWriterUtil.writeOpenTagIfNeeded(xmlw, "subjects", subjectsCreated);
                 XmlWriterUtil.writeFullElementWithAttributes(xmlw, "subject", attributesMap, StringEscapeUtils.escapeXml10(topic));

@@ -44,10 +44,12 @@ public class HttpSendReceiveClientStep implements WorkflowStep {
                     return new Pending();
                 } else {
                     String responseBody = new String(response.getEntity().getContent().readAllBytes());
-                    return new Failure("Error communicating with server. Server response: " + responseBody + " (" + responseStatus + ").");
+                    this.rollback(context, null);
+                return new Failure("Error communicating with server. Server response: " + responseBody + " (" + responseStatus + ").");
                 }
             });
         } catch (Exception ex) {
+            this.rollback(context, null);
             logger.log(Level.SEVERE, "Error communicating with remote server: " + ex.getMessage(), ex);
             return new Failure("Error executing request: " + ex.getLocalizedMessage(), "Cannot communicate with remote server.");
         }

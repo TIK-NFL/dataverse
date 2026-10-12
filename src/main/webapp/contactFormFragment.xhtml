@@ -60,6 +60,15 @@
                         <h:message for="userMessage" styleClass="bg-danger text-danger"/>
                     </div>
                 </div>
+                <!-- dsgvo -->
+                <ui:fragment rendered="#{sendFeedbackDialog.getFormHeader() != bundle['contact.dataverse.header'] and sendFeedbackDialog.getFormHeader() != bundle['contact.dataset.header']}">
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">#{bundle['contact.notice']}</label>
+                        <div class="col-sm-9">
+                            <label><h:outputText value="#{bundle['contact.msg.dsgvo']}" escape="false"/></label>
+                        </div>
+                    </div>
+                </ui:fragment>
                 <!-- validation -->
                 <div class="form-group">
                     <div class="col-sm-offset-3 col-sm-9">
